@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.IO;
+using System.IO.IsolatedStorage;
 
 #endregion
 
@@ -20,6 +21,8 @@ namespace Charge
     /// </summary>
     public class ChargeMain : Game
     {
+        private static readonly String UserSettingsFile = "UserSettings.txt";
+
         private static readonly float VolumeChangeAmount = 0.05f;
 
         private static readonly Color[] ChargeBarLevelColors = { new Color(50, 50, 50), new Color(0, 234, 6), Color.Yellow, Color.Red, Color.Blue, Color.Pink }; // The bar colors for each charge level
@@ -196,6 +199,8 @@ namespace Charge
             InitVars();
             playerSpeed = GameplayVars.titleScrollSpeed;
 
+            LoadUserSettings();
+
             //Initialize Monogame Stuff
             base.Initialize();
 
@@ -217,11 +222,6 @@ namespace Charge
             controls.Reset();
 
             ClearHighScoresText = DefaultClearHighScoresText;
-
-            masterVolume = 0.5f;
-        
-            // Sets the volume for the MediaPlayer. This controls the volume for the Songs used for the title screen and background music
-            MediaPlayer.Volume = masterVolume;
 
             barrierSpeed = GameplayVars.BarrierStartSpeed;
         }
@@ -963,6 +963,7 @@ namespace Charge
                 {
                     ClearHighScoresText = DefaultClearHighScoresText;
                     currentGameState = GameState.TitleScreen;
+                    SaveUserSettings();
                 }
 
                 if (controls.MenuSelectTrigger() && currentOptionSelection == OptionSelection.ClearHighScores)
@@ -1830,6 +1831,43 @@ namespace Charge
             fullScreenPixelEffect.pixelFadeTime = 3;
             fullScreenPixelEffect.spawnFrequency = 0.1f;
             fullScreenPixelEffect.pixelYVel = 20;
+        }
+
+        private void SaveUserSettings()
+        {
+            IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication();
+            IsolatedStorageFileStream settingsFileStream = store.OpenFile(UserSettingsFile, FileMode.OpenOrCreate);
+
+            StreamWriter settingsWriter = new StreamWriter(settingsFileStream);
+
+            settingsWriter.Write(masterVolume);
+
+            settingsWriter.Close();
+        }
+
+        private void LoadUserSettings()
+        {
+            IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication();
+
+            // Load user volume settings
+            if (store.FileExists(UserSettingsFile))
+            {
+                IsolatedStorageFileStream settingsFileStream = store.OpenFile(UserSettingsFile, FileMode.Open);
+                StreamReader settingsReader = new StreamReader(settingsFileStream);
+                
+                String volumeAsText = settingsReader.ReadLine();
+                masterVolume = (float)Convert.ToDouble(volumeAsText);
+                Console.WriteLine(volumeAsText);
+                settingsReader.Close();
+            }
+            else
+            {
+                masterVolume = 0.5f;
+                SaveUserSettings();
+            }
+
+            // Sets the volume for the MediaPlayer. This controls the volume for the Songs used for the title screen and background music
+            MediaPlayer.Volume = masterVolume;
         }
     }
 }
