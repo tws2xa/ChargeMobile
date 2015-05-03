@@ -161,6 +161,7 @@ namespace Charge
             DrawWorldEntityList(enemies, spriteBatch);
             DrawWorldEntityList(batteries, spriteBatch);
             DrawWorldEntityList(otherEnts, spriteBatch);
+            DrawWorldEntityList(projectiles, spriteBatch);
 
             //Draw the player
             if (player != null && !isGameOver)
