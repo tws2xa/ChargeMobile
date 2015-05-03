@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2714F577-0BD0-4802-A930-64BBDB239FCD}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Charge</RootNamespace>
+    <AssemblyName>Charge</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AndroidApplication>true</AndroidApplication>
+    <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <AndroidSupportedAbis>armeabi-v7a%3bx86</AndroidSupportedAbis>
+    <AndroidStoreUncompressedFileExtensions />
+    <MandroidI18n />
+    <TargetFrameworkVersion>v4.2</TargetFrameworkVersion>
+    <MonoGamePlatform>Android</MonoGamePlatform>
+    <MonoGameContentBuilderExe>
+    </MonoGameContentBuilderExe>
+    <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;ANDROID</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
+    <AndroidLinkMode>None</AndroidLinkMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;ANDROID</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Android" />
+    <Reference Include="mscorlib" />
+    <Reference Include="OpenTK" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(MSBuildProgramFiles32)\MonoGame\v3.0\Assemblies\Android\MonoGame.Framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Charge_Core\AnimatedWorldEntity.cs">
+      <Link>Charge_Core\AnimatedWorldEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Background.cs">
+      <Link>Charge_Core\Background.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Barrier.cs">
+      <Link>Charge_Core\Barrier.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\ChargeBar.cs">
+      <Link>Charge_Core\ChargeBar.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\ChargeBlast.cs">
+      <Link>Charge_Core\ChargeBlast.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\ChargeMain.cs">
+      <Link>Charge_Core\ChargeMain.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Circle.cs">
+      <Link>Charge_Core\Circle.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\DischargeAnimation.cs">
+      <Link>Charge_Core\DischargeAnimation.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\DisintegrationEffect.cs">
+      <Link>Charge_Core\DisintegrationEffect.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Enemy.cs">
+      <Link>Charge_Core\Enemy.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\GameplayVars.cs">
+      <Link>Charge_Core\GameplayVars.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\GameWorld.cs">
+      <Link>Charge_Core\GameWorld.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\HighScoreManager.cs">
+      <Link>Charge_Core\HighScoreManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\LevelGenerationVars.cs">
+      <Link>Charge_Core\LevelGenerationVars.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\LevelGenerator.cs">
+      <Link>Charge_Core\LevelGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\OverchargeEffect.cs">
+      <Link>Charge_Core\OverchargeEffect.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\PixelEffect.cs">
+      <Link>Charge_Core\PixelEffect.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Platform.cs">
+      <Link>Charge_Core\Platform.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\PlatformSection.cs">
+      <Link>Charge_Core\PlatformSection.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Player.cs">
+      <Link>Charge_Core\Player.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\Projectile.cs">
+      <Link>Charge_Core\Projectile.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\SpecialAbilityIcon.cs">
+      <Link>Charge_Core\SpecialAbilityIcon.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\SpecialAbilityIconSet.cs">
+      <Link>Charge_Core\SpecialAbilityIconSet.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\VirtualResolution.cs">
+      <Link>Charge_Core\VirtualResolution.cs</Link>
+    </Compile>
+    <Compile Include="..\Charge_Core\WorldEntity.cs">
+      <Link>Charge_Core\WorldEntity.cs</Link>
+    </Compile>
+    <Compile Include="Activity1.cs" />
+    <Compile Include="Controls.cs" />
+    <Compile Include="FileSystemManager.cs" />
+    <Compile Include="Resources\Resource.Designer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Content\Background.png" />
+    <AndroidAsset Include="Content\BackgroundMusic\Killing_Time.wav" />
+    <AndroidAsset Include="Content\BackgroundMusic\Killing_Time.wma" />
+    <AndroidAsset Include="Content\BackgroundMusic\TitleLoop.wav" />
+    <AndroidAsset Include="Content\BackgroundMusic\TitleLoop.wma" />
+    <AndroidAsset Include="Content\Barrier.png" />
+    <AndroidAsset Include="Content\BarrierAnimated.png" />
+    <AndroidAsset Include="Content\Battery.png" />
+    <AndroidAsset Include="Content\Discharge.png" />
+    <AndroidAsset Include="Content\DischargeAlt.png" />
+    <AndroidAsset Include="Content\DischargeAnimated.png" />
+    <AndroidAsset Include="Content\DischargeAnimated3.png" />
+    <AndroidAsset Include="Content\DischargeColor.png" />
+    <AndroidAsset Include="Content\Enemy.png" />
+    <AndroidAsset Include="Content\MiddlePin.png" />
+    <AndroidAsset Include="Content\OverchargeColor.png" />
+    <AndroidAsset Include="Content\PlatformCenterPiece.png" />
+    <AndroidAsset Include="Content\PlatformLeftCap.png" />
+    <AndroidAsset Include="Content\PlatformRightCap.png" />
+    <AndroidAsset Include="Content\Player.png" />
+    <AndroidAsset Include="Content\PlayerAnimation1.png" />
+    <AndroidAsset Include="Content\PlayerAnimation2.png" />
+    <AndroidAsset Include="Content\ShootColor.png" />
+    <AndroidAsset Include="Content\SoundFX\charge_collect.wav" />
+    <AndroidAsset Include="Content\SoundFX\charge_collect_quiet.wav" />
+    <AndroidAsset Include="Content\SoundFX\DischargeSound.wav" />
+    <AndroidAsset Include="Content\SoundFX\enemyDeath.wav" />
+    <AndroidAsset Include="Content\SoundFX\jump.wav" />
+    <AndroidAsset Include="Content\SoundFX\land.wav" />
+    <AndroidAsset Include="Content\SoundFX\overcharge.wav" />
+    <AndroidAsset Include="Content\SoundFX\Rearm.wav" />
+    <AndroidAsset Include="Content\SoundFX\shoot.wav" />
+    <AndroidAsset Include="Content\SwipeIcons.png" />
+    <AndroidAsset Include="Content\Wall.png" />
+    <AndroidAsset Include="Content\WhiteBarrier.png" />
+    <AndroidAsset Include="Content\fonts\arial-24.spritefont">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidAsset>
+    <AndroidAsset Include="Content\fonts\OCR-A-Extended-24.spritefont">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidAsset>
+    <AndroidAsset Include="Content\fonts\OCR-A-Extended-48.spritefont">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidAsset>
+    <None Include="Resources\AboutResources.txt" />
+    <None Include="Assets\AboutAssets.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Values\Strings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Drawable\Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Layout\" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Drawable\Splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Values\Styles.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <MonoGameContentReference Include="Content\Content.mgcb" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Content\BatteryGlow.png" />
+    <AndroidAsset Include="Content\ChargeBar.png" />
+    <AndroidAsset Include="Content\Discharge2.png" />
+    <AndroidAsset Include="Content\DischargeIcon.png" />
+    <AndroidAsset Include="Content\Discharge_old.png" />
+    <AndroidAsset Include="Content\GlowLeft.png" />
+    <AndroidAsset Include="Content\GlowRight.png" />
+    <AndroidAsset Include="Content\OverchargeIcon.png" />
+    <AndroidAsset Include="Content\RedWall.png" />
+    <AndroidAsset Include="Content\ShootIcon.png" />
+    <AndroidAsset Include="Content\White.png" />
+    <AndroidAsset Include="Content\WhitePlatformCenterPiece.png" />
+    <AndroidAsset Include="Content\WhitePlatformLeftCap.png" />
+    <AndroidAsset Include="Content\WhitePlatformRightCap.png" />
+    <AndroidAsset Include="Content\WhiteWall.png" />
+    <AndroidAsset Include="Properties\AndroidManifest.xml">
+      <SubType>Designer</SubType>
+    </AndroidAsset>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
