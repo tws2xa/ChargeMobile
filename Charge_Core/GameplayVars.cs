@@ -7,7 +7,7 @@ namespace Charge
     static class GameplayVars
     {
         // Use these variables for the Android Build
-        /*public static int ChargeBarY = 5;
+        public static int ChargeBarY = 5;
         public static int ChargeBarHeight = 25; //15 on PC. 25 on Android.
         public static int WinWidth = 1920; //Approx 2x pc width
         public static int WinHeight = 1080; //Approx 1.8x pc width
@@ -66,10 +66,10 @@ namespace Charge
         public static float titleScrollSpeed = 100;
         public static int MinPlatformBrightness = 255; //255 = fully bright
 
-        public static int NumScores = 10;*/
+        public static int NumScores = 10;
 
         // Use these variables for the PC build
-        public static int ChargeBarY = 5;
+        /*public static int ChargeBarY = 5;
         public static float maxPlayerVSpeed = 90;
         public static int ChargeBarHeight = 15; //25 on Android.
         public static int WinWidth = 1920;
@@ -137,7 +137,7 @@ namespace Charge
         public static float titleScrollSpeed = 100;
         public static int MinPlatformBrightness = 255; //255 = fully bright
 
-        public static int NumScores = 10;
+        public static int NumScores = 10;*/
 
         // These variables apply to Android and PC
         public static readonly String UserSettingsFile = "UserSettings.txt";
