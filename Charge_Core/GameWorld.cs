@@ -397,7 +397,7 @@ namespace Charge
             destroyEnemy = this.EnemyDestroyed;
             destroyPlatform = this.PlatformDestroyed;
             destroyWall = this.WallDestroyed;
-
+            
             // Initialize game state values
             isGameOver = false;
         }
@@ -1019,6 +1019,7 @@ namespace Charge
             tempScore = 0;
             globalCooldown = 0;
             totalGlobalCooldown = 0;
+            barrierSpeed = GameplayVars.BarrierStartSpeed;
 
             LoadPlatformsForGameStart();
         }
