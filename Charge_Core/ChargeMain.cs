@@ -44,6 +44,9 @@ namespace Charge
         public static Texture2D RightGlow;
         public static Texture2D ChargeBarTex;
 
+        public static SpriteFont FontSmall; //Sprite Font to draw score
+        public static SpriteFont FontLarge; //Sprite Font for title screen
+
         public enum GameState
         {
             TitleScreen,
@@ -52,6 +55,7 @@ namespace Charge
             InGame,
             Paused,
             GameOver,
+            TutorialExplain,
             TutorialJump,
             TutorialDischarge,
             TutorialShoot,
@@ -87,10 +91,7 @@ namespace Charge
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
-
-        private SpriteFont FontSmall; //Sprite Font to draw score
-        private SpriteFont FontLarge; //Sprite Font for title screen
-
+        
         // User Settings
         private float masterVolume;
         private bool showTutorial;
@@ -117,10 +118,18 @@ namespace Charge
         private Texture2D ShootIconTex;
         private Texture2D OverchargeIconTex;
         private Texture2D MiddlePin;
+        private Texture2D Arrow;
 
         private GameWorld gameWorld; // Represents the current GameWorld
 
         private ChargeBar chargeBar; // The chargebar
+
+        // Tutorial variables
+        private List<TutorialMessage> tutorialMessages;
+        private int EndTutorialJumpMessageId;
+        private int EndTutorialDischargeMessageId;
+        private int EndTutorialOverchargeMessageId;
+        private int EndTutorialShootMessageId;
 
         public ChargeMain()
             : base()
@@ -146,8 +155,8 @@ namespace Charge
         protected override void Initialize()
         {
             //Set window size
-            graphics.PreferredBackBufferWidth = GameplayVars.WinWidth;
-            graphics.PreferredBackBufferHeight = GameplayVars.WinHeight;
+            graphics.PreferredBackBufferWidth = GameplayVars.WinWidth / 2;
+            graphics.PreferredBackBufferHeight = GameplayVars.WinHeight / 2;
 
             controls = new Controls();
             highScoreManager = new HighScoreManager();
@@ -160,6 +169,8 @@ namespace Charge
             controls.Reset();
 
             ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
+
+            tutorialMessages = new List<TutorialMessage>();
             
             //Initialize Monogame Stuff
             base.Initialize();
@@ -195,6 +206,7 @@ namespace Charge
             LeftGlow = Content.Load<Texture2D>("GlowLeft");
             RightGlow = Content.Load<Texture2D>("GlowRight");
             ChargeBarTex = Content.Load<Texture2D>("ChargeBar");
+            Arrow = Content.Load<Texture2D>("Arrow");
 
             //Fonts
             FontSmall = this.Content.Load<SpriteFont>("fonts/OCR-A-Extended-24");
@@ -246,7 +258,7 @@ namespace Charge
             int iconY = GameplayVars.WinHeight - SpecialAbilityIconSet.iconHeight - 10;
             specialAbilityIcons = new SpecialAbilityIconSet(iconSpacer + 10, iconY, iconSpacer, DischargeIconTex, ShootIconTex, OverchargeIconTex, WhiteTex);
 
-            chargeBar = new ChargeBar(new Rectangle(graphics.GraphicsDevice.Viewport.Width / 4, GameplayVars.ChargeBarY, graphics.GraphicsDevice.Viewport.Width / 2, GameplayVars.ChargeBarHeight), ChargeBarTex, GameplayVars.ChargeBarLevelColors[0], GameplayVars.ChargeBarLevelColors[1]);
+            chargeBar = new ChargeBar(new Rectangle(GameplayVars.WinWidth / 4, GameplayVars.ChargeBarY, GameplayVars.WinWidth / 2, GameplayVars.ChargeBarHeight), ChargeBarTex, GameplayVars.ChargeBarLevelColors[0], GameplayVars.ChargeBarLevelColors[1]);
         }
 
         /// <summary>
@@ -272,6 +284,9 @@ namespace Charge
             // Update the game world
             gameWorld.Update(deltaTime, currentGameState);
 
+            // Update any tutorial messages
+            UpdateTutorialMessages(deltaTime);
+
             if (currentGameState == GameState.InGame || currentGameState == GameState.Paused || currentGameState == GameState.GameOver)
             {
                 // Update the Special Icons cooldown
@@ -281,6 +296,66 @@ namespace Charge
 
                 // Update the charge bar colors
                 UpdateChargeBar();
+            }
+            else if (currentGameState == GameState.TutorialExplain && tutorialMessages.Count == 0)
+            {
+                // We have shown all of the explainatory messages, so transition to the jump tutorial.
+                currentGameState = GameState.TutorialJump;
+                gameWorld.InitializeStateSpecificVariables(currentGameState);
+
+                LoadTutorialJumpMessages();
+            }
+            else if (currentGameState == GameState.TutorialJump && gameWorld.PlayerHasCompletedTutorialJump())
+            {
+                currentGameState = GameState.TutorialDischarge;
+                gameWorld.InitializeStateSpecificVariables(currentGameState);
+
+                tutorialMessages.RemoveAt(0);
+                LoadTutorialDischargeMessages();
+            }
+            else if (currentGameState == GameState.TutorialDischarge)
+            {
+                if (gameWorld.PlayerHasCompletedTutorialDischarge())
+                {
+                    currentGameState = GameState.TutorialOvercharge;
+                    gameWorld.InitializeStateSpecificVariables(currentGameState);
+                }
+                else if (gameWorld.GetHasDischarged() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialDischargeMessageId)
+                {
+                    tutorialMessages.RemoveAt(0);
+
+                    LoadTutorialOverchargeMessages();
+                }
+            }
+            else if (currentGameState == GameState.TutorialShoot)
+            {
+                if (gameWorld.PlayerHasCompletedTutorialShoot())
+                {
+                    tutorialMessages.Clear();
+
+                    currentGameState = GameState.InGame;
+                    gameWorld.InitializeStateSpecificVariables(currentGameState);
+                }
+                else if (gameWorld.GetHasShot() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialShootMessageId)
+                {
+                    tutorialMessages.RemoveAt(0);
+
+                    LoadTutorialDoneMessages();
+                }
+            }
+            else if (currentGameState == GameState.TutorialOvercharge)
+            {
+                if (gameWorld.PlayerHasCompletedTutorialOvercharge())
+                {
+                    currentGameState = GameState.TutorialShoot;
+                    gameWorld.InitializeStateSpecificVariables(currentGameState);
+                }
+                else if (gameWorld.GetHasOvercharged() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialOverchargeMessageId)
+                {
+                    tutorialMessages.RemoveAt(0);
+
+                    LoadTutorialShootMessages();
+                }
             }
 
             // If the game has ended, but the GameState is not set to GameOver. This ensures that the high score will only be updated once, instead of every time the update loop executes.
@@ -328,6 +403,9 @@ namespace Charge
 
             // Draw the game world
             gameWorld.Draw(spriteBatch);
+
+            // Draw any tutorial messages
+            DrawTutorialMessages(spriteBatch);
 
             // Handle UI elements for various game states
             if (currentGameState == GameState.TitleScreen || currentGameState == GameState.OptionsScreen || currentGameState == GameState.CreditsScreen)
@@ -377,6 +455,27 @@ namespace Charge
                     DrawGamePausedUI(spriteBatch);
                 }
             }
+            else if (IsTutorialState(currentGameState))
+            {
+                // Draw the charge bar
+                chargeBar.Draw(spriteBatch, gameWorld.GetCharge());
+
+                if (currentGameState == GameState.TutorialDischarge)
+                {
+                    // Draw discharge icon
+                    specialAbilityIcons.DrawDischargeIcon(spriteBatch);
+                }
+                else if (currentGameState == GameState.TutorialShoot)
+                {
+                    // Draw the shoot icon
+                    specialAbilityIcons.DrawShootIcon(spriteBatch);
+                }
+                else if (currentGameState == GameState.TutorialOvercharge)
+                {
+                    // Draw the overcharge icon
+                    specialAbilityIcons.DrawOverChargeIcon(spriteBatch);
+                }
+            }
 
             spriteBatch.End();
             base.Draw(gameTime);
@@ -397,7 +496,6 @@ namespace Charge
 
             if (currentTitleSelection == TitleSelection.Start)
             {
-
                 DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250), Color.Gold, Color.Black);
                 DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325));
                 DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400));
@@ -686,23 +784,26 @@ namespace Charge
                 {
                     if (currentTitleSelection == TitleSelection.Start)
                     {
-                        /*if (showTutorial)
+                        if (showTutorial)
                         {
                             currentGameState = GameState.TutorialJump;
+                            LoadTutorialExplainMessages();
+                            LoadTutorialJumpMessages();
 
                             showTutorial = false;
                             SaveUserSettings();
                         }
                         else
-                        {*/
-                        currentGameState = GameState.InGame;
+                        {
+                            currentGameState = GameState.InGame;
+                        }
+
                         gameWorld.InitializeStateSpecificVariables(currentGameState);
 
                         // Stop any currently playing song, and play the in-game background music
                         MediaPlayer.Stop();
                         MediaPlayer.Play(ChargeMain.Background1);
                         MediaPlayer.IsRepeating = true;
-                        //}
                     }
                     else if (currentTitleSelection == TitleSelection.Options)
                     {
@@ -787,7 +888,6 @@ namespace Charge
             }
             else if (currentGameState == GameState.InGame)
             {
-
                 // Player has pressed the jump command (A button on controller, space bar on keyboard)
                 if (controls.JumpTrigger())
                 {
@@ -848,6 +948,32 @@ namespace Charge
                 {
                     if (doPausePixelEffect) fullScreenPixelEffect = null;
                     currentGameState = GameState.InGame;
+                }
+            }
+            else if (IsTutorialState(currentGameState))
+            {
+                // Player has pressed the jump command (A button on controller, space bar on keyboard)
+                if (currentGameState != GameState.TutorialExplain && controls.JumpTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialJumpMessageId)
+                {
+                    gameWorld.InitiateJump();
+                }
+                else if (controls.JumpRelease())
+                {
+                    gameWorld.CutJump();
+                }
+
+                // Handle state specific controls
+                if (controls.DischargeTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialDischargeMessageId)
+                {
+                    gameWorld.InitiateDischarge();
+                }
+                else if (controls.ShootTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialShootMessageId)
+                {
+                    gameWorld.InitiateShoot();
+                }
+                else if (controls.OverchargeTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialOverchargeMessageId)
+                {
+                    gameWorld.InitiateOvercharge();
                 }
             }
         }
@@ -992,6 +1118,270 @@ namespace Charge
 
             // Sets the volume for the MediaPlayer. This controls the volume for the Songs used for the title screen and background music
             MediaPlayer.Volume = masterVolume;
+        }
+
+        /// <summary>
+        /// Initializes tutorial messages for the explainatory part of the tutorial
+        /// </summary>
+        private void LoadTutorialExplainMessages()
+        {
+            // Explain the charge bar
+            String message1 = "This is the Charge Bar";
+            String message2 = "The more charge you have, the faster you will go.";
+            String message3 = "You lose charge over time, causing you to go slower.";
+            String message4 = "Collect charge orbs to increase your charge and go faster!";
+
+            // Calculate the position for each message. They will all share the same y-value, but will have different x-values depending on message length
+            int messageTop = GameplayVars.WinHeight / 4;
+
+            int message1Left = GetCenteredStringLocation(FontSmall, message1, GameplayVars.WinWidth / 2);
+            int message2Left = GetCenteredStringLocation(FontSmall, message2, GameplayVars.WinWidth / 2);
+            int message3Left = GetCenteredStringLocation(FontSmall, message3, GameplayVars.WinWidth / 2);
+            int message4Left = GetCenteredStringLocation(FontSmall, message4, GameplayVars.WinWidth / 2);
+            
+            int chargeBarTarget = chargeBar.position.Left + chargeBar.position.Width / 4; // The position on the charge bar that the arrow will point to
+
+            // Calculate arrow rotation. 
+            double distToChargeBar = Math.Sqrt(Math.Pow(message1Left - chargeBarTarget, 2) + Math.Pow(messageTop - chargeBar.position.Bottom, 2));
+            float rotation = (float)Math.Asin((chargeBarTarget - message1Left) / distToChargeBar);
+
+            int arrowPositionLeft = (int)(message1Left + chargeBarTarget) / 2 - 10;
+            int arrowPositionTop = (int)(messageTop + chargeBar.position.Bottom) / 2;
+            int arrowPositionWidth = (int)(distToChargeBar / 4);
+            int arrowPositionHeight = (int)distToChargeBar;
+
+            Rectangle arrowPosition = new Rectangle(arrowPositionLeft, arrowPositionTop, arrowPositionWidth, arrowPositionHeight);
+
+            TutorialMessage tm1 = new TutorialMessage(message1, true, new Vector2(message1Left, messageTop), Color.White, arrowPosition, Arrow, rotation, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm2 = new TutorialMessage(message2, true, new Vector2(message2Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm3 = new TutorialMessage(message3, true, new Vector2(message3Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm4 = new TutorialMessage(message4, true, new Vector2(message4Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+
+            tutorialMessages.Add(tm1);
+            tutorialMessages.Add(tm2);
+            tutorialMessages.Add(tm3);
+            tutorialMessages.Add(tm4);
+        }
+
+        private void LoadTutorialJumpMessages()
+        {
+            // Explain the jump mechanic
+            String message1 = "While playing Charge, there will be obstacles to avoid";
+            String message2 = "and charge orbs to sometimes collect, and sometimes dodge.";
+            String message3 = "You will need to jump and double jump to survive.";
+            String message4 = controls.GetJumpString() + " to jump, and again to double jump.";
+            String message5 = "Holding the jump longer will cause you to go higher,";
+            String message6 = "while releasing it early will cause a shorter jump.";
+            String message7 = "Perform a double jump now (" + controls.GetJumpString() + ")";
+
+            // Calculate the position for each message. They will all share the same y-value, but will have different x-values depending on message length
+            int messageTop = GameplayVars.WinHeight / 4;
+            int message1Left = GetCenteredStringLocation(FontSmall, message1, GameplayVars.WinWidth / 2);
+            int message2Left = GetCenteredStringLocation(FontSmall, message2, GameplayVars.WinWidth / 2);
+            int message3Left = GetCenteredStringLocation(FontSmall, message3, GameplayVars.WinWidth / 2);
+            int message4Left = GetCenteredStringLocation(FontSmall, message4, GameplayVars.WinWidth / 2);
+            int message5Left = GetCenteredStringLocation(FontSmall, message5, GameplayVars.WinWidth / 2);
+            int message6Left = GetCenteredStringLocation(FontSmall, message6, GameplayVars.WinWidth / 2);
+            int message7Left = GetCenteredStringLocation(FontSmall, message7, GameplayVars.WinWidth / 2);
+
+            // Create the tutorial messages
+            TutorialMessage tm1 = new TutorialMessage(message1, true, new Vector2(message1Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm2 = new TutorialMessage(message2, true, new Vector2(message2Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm3 = new TutorialMessage(message3, true, new Vector2(message3Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm4 = new TutorialMessage(message4, true, new Vector2(message4Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm5 = new TutorialMessage(message5, true, new Vector2(message5Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm6 = new TutorialMessage(message6, true, new Vector2(message6Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm7 = new TutorialMessage(message7, false, new Vector2(message7Left, messageTop), Color.White, null, null, 0, 0);
+
+            // Set the id of the final jump tutorial message
+            EndTutorialJumpMessageId = tm7.GetId();
+
+            // Add the tutorial messages to the message queue
+            tutorialMessages.Add(tm1);
+            tutorialMessages.Add(tm2);
+            tutorialMessages.Add(tm3);
+            tutorialMessages.Add(tm4);
+            tutorialMessages.Add(tm5);
+            tutorialMessages.Add(tm6);
+            tutorialMessages.Add(tm7);
+        }
+
+        private void LoadTutorialDischargeMessages()
+        {
+            // Explain Discharge
+            String message1 = "This is a death barrier.";
+            String message2 = "There is one in front of you, and one behind you at all times.";
+            String message3 = "If you go too fast, you will run into the barrier.";
+            String message4 = "If you go too slow, the barrier behind you will hit you.";
+            String message5 = "If you find yourself going too fast,\n you can avoid picking up charge orbs to slow down.";
+            String message6 = "In emergencies, you can use the Discharge Ability.";
+            String message7 = "Discharge will blast enemies away and slow you down immediately.";
+            String message8 = "Be warned that using any ability will block you\n from using any other ability for a short time.";
+            String message9 = controls.GetDischargeString() + " to use Discharge now";
+
+            // Calculate the position for each message. They will all share the same y-value, but will have different x-values depending on message length
+            int messageTop = GameplayVars.WinHeight / 4;
+            int message1Left = GetCenteredStringLocation(FontSmall, message1, GameplayVars.WinWidth / 2);
+            int message2Left = GetCenteredStringLocation(FontSmall, message2, GameplayVars.WinWidth / 2);
+            int message3Left = GetCenteredStringLocation(FontSmall, message3, GameplayVars.WinWidth / 2);
+            int message4Left = GetCenteredStringLocation(FontSmall, message4, GameplayVars.WinWidth / 2);
+            int message5Left = GetCenteredStringLocation(FontSmall, message5, GameplayVars.WinWidth / 2);
+            int message6Left = GetCenteredStringLocation(FontSmall, message6, GameplayVars.WinWidth / 2);
+            int message7Left = GetCenteredStringLocation(FontSmall, message7, GameplayVars.WinWidth / 2);
+            int message8Left = GetCenteredStringLocation(FontSmall, message8, GameplayVars.WinWidth / 2);
+            int message9Left = GetCenteredStringLocation(FontSmall, message9, GameplayVars.WinWidth / 2);
+
+            // Create the tutorial messages
+            TutorialMessage tm1 = new TutorialMessage(message1, true, new Vector2(message1Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm2 = new TutorialMessage(message2, true, new Vector2(message2Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm3 = new TutorialMessage(message3, true, new Vector2(message3Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm4 = new TutorialMessage(message4, true, new Vector2(message4Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm5 = new TutorialMessage(message5, true, new Vector2(message5Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm6 = new TutorialMessage(message6, true, new Vector2(message6Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm7 = new TutorialMessage(message7, true, new Vector2(message7Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm8 = new TutorialMessage(message8, true, new Vector2(message8Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm9 = new TutorialMessage(message9, false, new Vector2(message9Left, messageTop), Color.White, null, null, 0, 0);
+
+            // Set the id of the final discharge tutorial message
+            EndTutorialDischargeMessageId = tm9.GetId();
+
+            // Add the tutorial messages to the message queue
+            tutorialMessages.Add(tm1);
+            tutorialMessages.Add(tm2);
+            tutorialMessages.Add(tm3);
+            tutorialMessages.Add(tm4);
+            tutorialMessages.Add(tm5);
+            tutorialMessages.Add(tm6);
+            tutorialMessages.Add(tm7);
+            tutorialMessages.Add(tm8);
+            tutorialMessages.Add(tm9);
+        }
+
+        private void LoadTutorialShootMessages()
+        {
+            // Explain Shoot
+            String message1 = "If you are going just a little too fast,\n you can use Shoot to slow down.";
+            String message2 = "Shoot won't slow you down as much as Discharge,\n but has a much shorter cooldown time.";
+            String message3 = controls.GetShootString() + " to use Shoot now";
+
+            // Calculate the position for each message. They will all share the same y-value, but will have different x-values depending on message length
+            int messageTop = GameplayVars.WinHeight / 4;
+            int message1Left = GetCenteredStringLocation(FontSmall, message1, GameplayVars.WinWidth / 2);
+            int message2Left = GetCenteredStringLocation(FontSmall, message2, GameplayVars.WinWidth / 2);
+            int message3Left = GetCenteredStringLocation(FontSmall, message3, GameplayVars.WinWidth / 2);
+
+            // Create the tutorial messages
+            TutorialMessage tm1 = new TutorialMessage(message1, true, new Vector2(message1Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm2 = new TutorialMessage(message2, true, new Vector2(message2Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm3 = new TutorialMessage(message3, false, new Vector2(message3Left, messageTop), Color.White, null, null, 0, 0);
+
+            // Set the id of the final shoot tutorial message
+            EndTutorialShootMessageId = tm3.GetId();
+
+            // Add the tutorial messages to the message queue
+            tutorialMessages.Add(tm1);
+            tutorialMessages.Add(tm2);
+            tutorialMessages.Add(tm3);
+        }
+
+        private void LoadTutorialOverchargeMessages()
+        {
+            // Explain Overcharge
+            String message1 = "When you are going too slow you should \npick up charge orbs to increase your speed.";
+            String message2 = "In emergencies, you can use Overcharge to \ntemporarily boost your speed and break through walls.";
+            String message3 = "Like Discharge, Overcharge comes with a cooldown cost.";
+            String message4 = "You will not be able to use other \nabilities for a short time after using Overcharge.";
+            String message8 = controls.GetOverchargeString() + " to use Overcharge now";
+
+            // Calculate the position for each message. They will all share the same y-value, but will have different x-values depending on message length
+            int messageTop = GameplayVars.WinHeight / 4;
+            int message1Left = GetCenteredStringLocation(FontSmall, message1, GameplayVars.WinWidth / 2);
+            int message2Left = GetCenteredStringLocation(FontSmall, message2, GameplayVars.WinWidth / 2);
+            int message3Left = GetCenteredStringLocation(FontSmall, message3, GameplayVars.WinWidth / 2);
+            int message4Left = GetCenteredStringLocation(FontSmall, message4, GameplayVars.WinWidth / 2);
+            int message8Left = GetCenteredStringLocation(FontSmall, message8, GameplayVars.WinWidth / 2);
+
+            // Create the tutorial messages
+            TutorialMessage tm1 = new TutorialMessage(message1, true, new Vector2(message1Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm2 = new TutorialMessage(message2, true, new Vector2(message2Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm3 = new TutorialMessage(message3, true, new Vector2(message3Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm4 = new TutorialMessage(message4, true, new Vector2(message4Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm8 = new TutorialMessage(message8, false, new Vector2(message8Left, messageTop), Color.White, null, null, 0, 0);
+
+            // Set the id of the final overcharge tutorial message
+            EndTutorialOverchargeMessageId = tm8.GetId();
+
+            // Add the tutorial messages to the message queue
+            tutorialMessages.Add(tm1);
+            tutorialMessages.Add(tm2);
+            tutorialMessages.Add(tm3);
+            tutorialMessages.Add(tm4);
+            tutorialMessages.Add(tm8);
+        }
+
+        private void LoadTutorialDoneMessages()
+        {
+            // Explain Discharge
+            String message1 = "Well done!";
+            String message2 = "You've completed the tutorial.";
+            String message3 = "Now watch out for those barriers...";
+
+            // Calculate the position for each message. They will all share the same y-value, but will have different x-values depending on message length
+            int messageTop = GameplayVars.WinHeight / 4;
+            int message1Left = GetCenteredStringLocation(FontSmall, message1, GameplayVars.WinWidth / 2);
+            int message2Left = GetCenteredStringLocation(FontSmall, message2, GameplayVars.WinWidth / 2);
+            int message3Left = GetCenteredStringLocation(FontSmall, message3, GameplayVars.WinWidth / 2);
+
+            // Create the tutorial messages
+            TutorialMessage tm1 = new TutorialMessage(message1, true, new Vector2(message1Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm2 = new TutorialMessage(message2, true, new Vector2(message2Left, messageTop), Color.White, null, null, 0, GameplayVars.DefaultTutorialMessageTimeout);
+            TutorialMessage tm3 = new TutorialMessage(message3, false, new Vector2(message3Left, messageTop), Color.Black, new Rectangle(GameplayVars.WinWidth / 2, GameplayVars.WinHeight / 2, GameplayVars.WinWidth, GameplayVars.WinHeight), WhiteTex, 0, 0);
+
+            // Add the tutorial messages to the message queue
+            tutorialMessages.Add(tm1);
+            tutorialMessages.Add(tm2);
+            tutorialMessages.Add(tm3);
+        }
+
+        /// <summary>
+        /// Updates the first tutorial message, which should currently be showing. If that tutorial message has expired, then remove it.
+        /// </summary>
+        /// <param name="deltaTime">How much time, in seconds, has passed since the last update.</param>
+        private void UpdateTutorialMessages(float deltaTime)
+        {
+            // Only update the first message
+            if (tutorialMessages.Count > 0)
+            {
+                TutorialMessage message = tutorialMessages[0];
+                message.Update(deltaTime);
+                
+                if (message.ShouldRemove())
+                {
+                    tutorialMessages.RemoveAt(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draws only the first tutorial message in the list.
+        /// </summary>
+        /// <param name="spriteBatch">The SpriteBatch to draw to</param>
+        private void DrawTutorialMessages(SpriteBatch spriteBatch)
+        {
+            if (tutorialMessages.Count > 0)
+            {
+                tutorialMessages[0].Draw(spriteBatch);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the given game state is a tutorial state.
+        /// </summary>
+        /// <param name="gameState">The game state to check</param>
+        /// <returns></returns>
+        private bool IsTutorialState(GameState gameState)
+        {
+            return gameState == GameState.TutorialExplain || gameState == GameState.TutorialJump || gameState == GameState.TutorialDischarge || gameState == GameState.TutorialOvercharge || gameState == GameState.TutorialShoot;
         }
     }
 }

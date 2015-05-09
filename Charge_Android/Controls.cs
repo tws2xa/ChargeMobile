@@ -420,6 +420,26 @@ namespace Charge
         {
             return "Tap";
         }
+
+        public string GetJumpString()
+        {
+            return "Tap the left side of the screen";
+        }
+
+        public string GetDischargeString()
+        {
+            return "Swipe Left";
+        }
+
+        public string GetShootString()
+        {
+            return "Swipe Up";
+        }
+
+        public string GetOverchargeString()
+        {
+            return "Swipe Right";
+        }
         #endregion
     }
 }

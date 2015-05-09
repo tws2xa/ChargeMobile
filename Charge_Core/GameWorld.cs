@@ -31,11 +31,6 @@ namespace Charge
         // Cooldown variables
         private float globalCooldown; //The cooldown on powerups
         private float totalGlobalCooldown; //The max from which the cooldown is decreasing
-
-        // Variables for generating platform contents
-        private int distanceSinceGeneration; // Distance since the last time that the charge orb spawning on each tier was decided
-        private int tierWithNoChargeOrbs; // Tier that spawns no charge orbs
-        private int tierWithSomeChargeOrbs; // Tier that spawns at least one charge orb per platform
         
         // Barrier variables
         private float playerSpeed; //Current run speed
@@ -59,6 +54,16 @@ namespace Charge
         // Game state values
         private bool isGameOver;
 
+        // Gameplay Variables. These will be set to the relevant values from GameplayVars.cs normally, but will be customized for the tutorials.
+        private float chargeDecreaseRate;
+        private float barrierSpeedUpRate;
+
+        // Tutorial variables
+        private bool hasDoubleJumped;
+        private bool hasDischarged;
+        private bool hasShot;
+        private bool hasOvercharged;
+
         public GameWorld()
         {
             InitializeGeneralVariables();
@@ -70,8 +75,6 @@ namespace Charge
         /// <param name="gameState">GameState for which to set up the Game World</param>
         public void InitializeStateSpecificVariables(ChargeMain.GameState gameState)
         {
-            ResetAllLists(); // Always clear all entity lists when reinitializing
-
             switch (gameState)
             {
                 case ChargeMain.GameState.InGame:
@@ -83,12 +86,16 @@ namespace Charge
                     InitializeMenuScreenState();
                     break;
                 case ChargeMain.GameState.TutorialJump:
+                    InitializeTutorialBasic();
                     break;
                 case ChargeMain.GameState.TutorialDischarge:
+                    InitializeTutorialDischarge();
                     break;
                 case ChargeMain.GameState.TutorialShoot:
+                    InitializeTutorialShoot();
                     break;
                 case ChargeMain.GameState.TutorialOvercharge:
+                    InitializeTutorialOvercharge();
                     break;
                 default:
                     break;
@@ -110,17 +117,22 @@ namespace Charge
 
                 // Update all entities in the world
                 UpdateAllWorldEntities(deltaTime);
-
-                // Update distance since last tier charge orb decision
-                distanceSinceGeneration += (int)(deltaTime * playerSpeed);
-
+                
                 // Generate new platforms
-                levelGenerator.Update(deltaTime);
-                GenerateLevelContent();
+                levelGenerator.Update(deltaTime, playerSpeed);
+
+                if (IsTutorialLevel(gameState))
+                {
+                    levelGenerator.GenerateLevelContentForTutorial(GetCurrentPlatformColor(), ref platforms);
+                }
+                else
+                {
+                    levelGenerator.GenerateLevelContent(barrierSpeed, playerSpeed, GetCurrentPlatformColor(), ref platforms, ref enemies, ref batteries, ref walls);
+                }
             }
 
-            // Handles updates specific to the InGame gamestate
-            if (gameState == ChargeMain.GameState.InGame)
+            // Handles updates specific to states where the player is actively engaged with the game (i.e. InGame state and all tutorial states)
+            if (IsActiveGameState(gameState))
             {
                 // Update the player's position
                 player.Update(deltaTime, playerSpeed);
@@ -132,9 +144,17 @@ namespace Charge
                 }
 
                 // Update the barriers
-                barrierSpeed += GameplayVars.BarrierSpeedUpRate * deltaTime;
-                frontBarrier.Update(deltaTime, playerSpeed, barrierSpeed);
-                backBarrier.Update(deltaTime, playerSpeed, barrierSpeed);
+                barrierSpeed += barrierSpeedUpRate * deltaTime;
+
+                if (frontBarrier != null)
+                {
+                    frontBarrier.Update(deltaTime, playerSpeed, barrierSpeed);
+                }
+
+                if (backBarrier != null)
+                {
+                    backBarrier.Update(deltaTime, playerSpeed, barrierSpeed);
+                }
 
                 UpdateScore(deltaTime); //Update the player score
                 CheckCollisions(); //Check for any collisions
@@ -143,6 +163,7 @@ namespace Charge
                 UpdateCooldown(deltaTime); //Update the global cooldown
                 UpdateEffects(deltaTime); //Handle effects for things like Overcharge, etc
             }
+            // Handle changes specific to the GameOver state
             else if (gameState == ChargeMain.GameState.GameOver)
             {
                 // The only thing that needs to be updated is the effects, so that they can end even after the player loses the game.
@@ -203,6 +224,12 @@ namespace Charge
             if (player.jmpNum < GameplayVars.playerNumJmps || player.grounded)
             {
                 player.jmpNum++;
+
+                if (player.jmpNum == 2)
+                {
+                    hasDoubleJumped = true;
+                }
+
                 player.vSpeed = GameplayVars.JumpInitialVelocity;
                 player.grounded = false;
                 PlaySound(ChargeMain.jumpSound);
@@ -232,8 +259,10 @@ namespace Charge
 
             player.Overcharge();
             PlaySound(ChargeMain.overchargeSound);
-
+            
             SetGlobalCooldown(GameplayVars.OverchargeCooldownTime[GetCurrentLevel() - 1]);
+
+            hasOvercharged = true;
         }
 
 
@@ -255,9 +284,12 @@ namespace Charge
             int bulletY = player.position.Center.Y - bulletHeight / 2 + 5;
             Projectile bullet = new Projectile(new Rectangle(bulletX, bulletY, bulletWidth, bulletHeight), ChargeMain.ChargeBarTex, GameplayVars.BulletMoveSpeed);
             projectiles.Add(bullet);
-
+            
             SetGlobalCooldown(GameplayVars.ShootCooldownTime[GetCurrentLevel() - 1]);
+
             PlaySound(ChargeMain.shootSound);
+
+            hasShot = true;
         }
 
         /// <summary>
@@ -280,12 +312,18 @@ namespace Charge
 
             DischargeAnimation discharge = new DischargeAnimation(new Rectangle(player.position.Left, player.position.Top, player.position.Width, player.position.Width), ChargeMain.DischargeTex, player);
             otherEnts.Add(discharge);
-
+            
             SetGlobalCooldown(GameplayVars.DischargeCooldownTime[GetCurrentLevel() - 1]);
+            
             PlaySound(ChargeMain.dischargeSound);
+
+            hasDischarged = true;
         }
 
-
+        /// <summary>
+        /// Sets the global cooldown for the special abilities
+        /// </summary>
+        /// <param name="cooldown">The cooldown for the special abilities</param>
         public void SetGlobalCooldown(float cooldown)
         {
             globalCooldown = cooldown;
@@ -322,6 +360,70 @@ namespace Charge
         public float GetCharge()
         {
             return player.GetCharge();
+        }
+
+        /// <summary>
+        /// Returns true if the player has double jumped
+        /// </summary>
+        public bool PlayerHasCompletedTutorialJump()
+        {
+            return hasDoubleJumped;
+        }
+
+        /// <summary>
+        /// Returns true if the player has double jumped
+        /// </summary>
+        public bool GetHasDoubleJumped()
+        {
+            return hasDoubleJumped;
+        }
+
+        /// <summary>
+        /// Returns true if the player has used the discharge ability and the back barrier has caught up to the player
+        /// </summary>
+        public bool PlayerHasCompletedTutorialDischarge()
+        {
+            return hasDischarged && (player.position.X - backBarrier.position.X) < 150;
+        }
+
+        /// <summary>
+        /// Returns true if the player has used the discharge ability
+        /// </summary>
+        public bool GetHasDischarged()
+        {
+            return hasDischarged;
+        }
+
+        /// <summary>
+        /// Returns true if the player has used the shoot ability and the front barrier has moved off the screen
+        /// </summary>
+        public bool PlayerHasCompletedTutorialShoot()
+        {
+            return hasShot && frontBarrier.position.X > GameplayVars.WinWidth;
+        }
+
+        /// <summary>
+        /// Returns true if the player has used the shoot ability
+        /// </summary>
+        public bool GetHasShot()
+        {
+            return hasShot;
+        }
+
+        /// <summary>
+        /// Returns true if the player has used the overcharge ability and the overcharge is over
+        /// </summary>
+        public bool PlayerHasCompletedTutorialOvercharge()
+        {
+            return hasOvercharged && !player.OverchargeActive();
+        }
+
+        /// <summary>
+        /// Returns true if the player has used the overcharge ability
+        /// </summary>
+        public bool GetHasOvercharged()
+        {
+            return hasOvercharged;
         }
 
         /// <summary>
@@ -372,7 +474,7 @@ namespace Charge
         {
             // Initialize tools
             rand = new Random();
-            levelGenerator = new LevelGenerator();
+            levelGenerator = new LevelGenerator(ChargeMain.PlatformLeftTex, ChargeMain.PlatformCenterTex, ChargeMain.PlatformRightTex);
 
             // Initialize general barrier variables
             glowWidth = GameplayVars.WinWidth / 7;
@@ -419,7 +521,7 @@ namespace Charge
         /// Draws the warning glow for the front barrier
         /// </summary>
         /// <param name="spriteBatch">The SpriteBatch to draw to.</param>
-        private void DrawFrontBarrierWarningGlow(SpriteBatch spriteBatch)
+        private void DrawBackBarrierWarningGlow(SpriteBatch spriteBatch)
         {
             float distThreshold = GameplayVars.GlowThreshold;
 
@@ -440,7 +542,7 @@ namespace Charge
         /// Draws the warning glow for the back barrier
         /// </summary>
         /// <param name="spriteBatch">The SpriteBatch to draw to.</param>
-        private void DrawBackBarrierWarningGlow(SpriteBatch spriteBatch)
+        private void DrawFrontBarrierWarningGlow(SpriteBatch spriteBatch)
         {
             float distThreshold = GameplayVars.GlowThreshold;
 
@@ -493,138 +595,19 @@ namespace Charge
         }
 
         /// <summary>
-        /// Generates new level content
+        /// Returns true if the game state is one in which the player is actively engaged in the game (i.e. InGame state or a tutorial state)
         /// </summary>
-        private void GenerateLevelContent()
+        private bool IsActiveGameState(ChargeMain.GameState gameState)
         {
-            //Get the new platforms
-            List<Platform> newPlatforms = levelGenerator.GenerateNewPlatforms(platforms.Count, ChargeMain.PlatformLeftTex, ChargeMain.PlatformCenterTex, ChargeMain.PlatformRightTex, GetCurrentPlatformColor());
-
-            //Add each platform to the list of platforms
-            //And generates items to go above each platform
-            foreach (Platform platform in newPlatforms)
-            {
-                platforms.Add(platform);
-                GeneratePlatformContents(platform);
-            }
+            return gameState == ChargeMain.GameState.InGame || IsTutorialLevel(gameState);
         }
 
         /// <summary>
-        /// Generates the items to go above the given platform,
-        /// Like walls, enemies, and batteries, and adds them
-        /// To the world
+        /// Returns true if the current game state is one of the tutorial game states
         /// </summary>
-        /// <param name="platform">Platform for which to generate content.</param>
-        private void GeneratePlatformContents(Platform platform)
+        private bool IsTutorialLevel(ChargeMain.GameState gameState)
         {
-            //The number of sections in the platform
-            int numSections = platform.sections.Count;
-
-            int numWalls = 0;
-            int numEnemies = 0;
-            int numBatteries = 0;
-
-            //Check whether the charge orb spawning per tier should change
-            if (distanceSinceGeneration > GameplayVars.WinWidth / 2)
-            {
-                distanceSinceGeneration = 0;
-                int orbRoll = rand.Next(0, 6);
-                switch (orbRoll)
-                {
-                    case 0:
-                        tierWithNoChargeOrbs = 0;
-                        tierWithSomeChargeOrbs = 1;
-                        break;
-                    case 1:
-                        tierWithNoChargeOrbs = 0;
-                        tierWithSomeChargeOrbs = 2;
-                        break;
-                    case 2:
-                        tierWithNoChargeOrbs = 1;
-                        tierWithSomeChargeOrbs = 0;
-                        break;
-                    case 3:
-                        tierWithNoChargeOrbs = 1;
-                        tierWithSomeChargeOrbs = 2;
-                        break;
-                    case 4:
-                        tierWithNoChargeOrbs = 2;
-                        tierWithSomeChargeOrbs = 0;
-                        break;
-                    case 5:
-                        tierWithNoChargeOrbs = 2;
-                        tierWithSomeChargeOrbs = 1;
-                        break;
-                    default:
-                        Console.WriteLine("Error in charge orb generation");
-                        break;
-                }
-            }
-            int necessaryOrbLocation = -1;
-            if (platform.getTier() == tierWithSomeChargeOrbs)
-            {
-                necessaryOrbLocation = rand.Next(0, numSections);
-            }
-            //Check whether or not to add somthing to each section
-            for (int i = 0; i < numSections; i++)
-            {
-                int roll = rand.Next(0, LevelGenerationVars.SectionContentRollNum);
-
-                int sectionCenter = platform.sections[i].position.Center.X;
-
-                int batteryRollRange = LevelGenerationVars.BatterySpawnRollRange;
-
-                float multiplier = 1;
-                if (barrierSpeed > 0)
-                {
-                    float playerBarrierSpeedDiff = playerSpeed - barrierSpeed;
-                    multiplier = playerBarrierSpeedDiff / barrierSpeed;
-                }
-                batteryRollRange -= Convert.ToInt32(LevelGenerationVars.MaxBatteryVariation * multiplier);
-
-                //Either a battery is necessary or the roll results in battery spawning and a battery can spawn on that tier
-                if ((i == necessaryOrbLocation) || (roll < batteryRollRange && numBatteries < LevelGenerationVars.MaxBatteriesPerPlatform))
-                    if (platform.getTier() != tierWithNoChargeOrbs)
-                    {
-                        //Spawn Battery
-                        int width = LevelGenerationVars.BatteryWidth;
-                        int height = LevelGenerationVars.BatteryHeight;
-                        WorldEntity battery = new WorldEntity(new Rectangle(sectionCenter - width / 2, platform.position.Top - height / 2 - GameplayVars.StartPlayerHeight / 3, width, height), ChargeMain.BatteryTex);
-                        batteries.Add(battery);
-                        platform.sections[i].containedObj = PlatformSection.BATTERYSTR;
-                        numBatteries++;
-                    }
-                    else if (roll < batteryRollRange + LevelGenerationVars.WallSpawnFrequency && numWalls < LevelGenerationVars.MaxWallsPerPlatform)
-                    {
-                        //Spawn Wall (takes up two platform spaces)
-                        if (i >= numSections - 1) continue; //Need two sections
-
-                        int width = LevelGenerationVars.WallWidth;
-                        int height = LevelGenerationVars.WallHeight;
-                        WorldEntity wall = new WorldEntity(new Rectangle(platform.sections[i].position.Right - width / 2, platform.position.Top - height + 3, width, height), ChargeMain.WallTex);
-                        walls.Add(wall);
-                        platform.sections[i].containedObj = PlatformSection.WALLSTR;
-                        platform.sections[i + 1].containedObj = PlatformSection.WALLSTR;
-                        numWalls++;
-                        i++; //Took up an extra section
-                    }
-                    else if (roll < batteryRollRange + LevelGenerationVars.WallSpawnFrequency + LevelGenerationVars.EnemySpawnFrequency
-                        && numEnemies < LevelGenerationVars.MaxEnemiesPerPlatform && enemies.Count < LevelGenerationVars.MaxNumEnemiesTotal)
-                    {
-                        //Enemy needs at least one place to which he/she may walk.
-                        bool hasRoom = false;
-                        if ((i > 0) && (platform.sections[i - 1].containedObj == null || platform.sections[i - 1].containedObj == PlatformSection.BATTERYSTR)) hasRoom = true;
-                        else if ((i < numSections - 1) && (platform.sections[i + 1].containedObj == null || platform.sections[i + 1].containedObj == PlatformSection.BATTERYSTR)) hasRoom = true;
-                        if (!hasRoom) continue;
-
-                        //Spawn Enemy
-                        int width = LevelGenerationVars.EnemyWidth;
-                        int height = LevelGenerationVars.EnemyHeight;
-                        Enemy enemy = new Enemy(new Rectangle(sectionCenter - width / 2, platform.position.Top - height, width, height), ChargeMain.EnemyTex, platform);
-                        enemies.Add(enemy);
-                        numEnemies++;
-                    }
-            }
+            return gameState == ChargeMain.GameState.TutorialDischarge || gameState == ChargeMain.GameState.TutorialJump || gameState == ChargeMain.GameState.TutorialOvercharge || gameState == ChargeMain.GameState.TutorialShoot || gameState == ChargeMain.GameState.TutorialExplain;
         }
 
         /// <summary>
@@ -785,11 +768,11 @@ namespace Charge
         /// </summary>
         private void CheckPlayerBarrierCollisions()
         {
-            if (player.position.Right > frontBarrier.position.Center.X)
+            if (frontBarrier != null && player.position.Right > frontBarrier.position.Center.X)
             {
                 PlayerDeath();
             }
-            else if (player.position.Left < backBarrier.position.Center.X)
+            else if (backBarrier != null && player.position.Left < backBarrier.position.Center.X)
             {
                 PlayerDeath();
             }
@@ -950,7 +933,7 @@ namespace Charge
         /// </summary>
         private void UpdatePlayerCharge(float deltaTime)
         {
-            player.DecCharge(GameplayVars.ChargeDecreaseRate * deltaTime);
+            player.DecCharge(chargeDecreaseRate * deltaTime);
         }
         
         /// <summary>
@@ -1005,10 +988,21 @@ namespace Charge
         /// </summary>
         private void InitializeInGameState()
         {
+            // Clear all existing world entities
+            ResetAllLists();
+
             //Create the initial objects
             player = new Player(new Rectangle(GameplayVars.PlayerStartX, LevelGenerationVars.Tier2Height - 110, GameplayVars.StartPlayerWidth, GameplayVars.StartPlayerHeight), ChargeMain.PlayerTex); //The player character
             backBarrier = new Barrier(new Rectangle(GameplayVars.BackBarrierStartX, -50, GameplayVars.BarrierWidth, GameplayVars.WinHeight + 100), ChargeMain.BarrierTex, ChargeMain.WhiteTex); //The death barrier behind the player
             frontBarrier = new Barrier(new Rectangle(GameplayVars.FrontBarrierStartX, -50, GameplayVars.BarrierWidth, GameplayVars.WinHeight + 100), ChargeMain.BarrierTex, ChargeMain.WhiteTex); //The death barrier in front of the player
+
+            // Set the initial speeds
+            playerSpeed = GameplayVars.PlayerStartSpeed;
+            barrierSpeed = GameplayVars.BarrierStartSpeed;
+
+            // Set Gameplay variables
+            chargeDecreaseRate = GameplayVars.ChargeDecreaseRate;
+            barrierSpeedUpRate = GameplayVars.BarrierSpeedUpRate;
 
             //Reset the level generator.
             levelGenerator.Reset();
@@ -1028,21 +1022,97 @@ namespace Charge
         /// </summary>
         private void InitializeMenuScreenState()
         {
-            // Set the initial speeds
-            playerSpeed = GameplayVars.PlayerStartSpeed;
-            barrierSpeed = GameplayVars.BarrierStartSpeed;
-
-            // Set game state variables
-            isGameOver = false;
-            score = 0;
-            tempScore = 0;
+            // Clear all existing world entities
+            ResetAllLists();
 
             // Set the player and barriers to null. This is so they won't get drawn
             player = null;
             frontBarrier = null;
             backBarrier = null;
 
+            // Set the initial speeds
+            playerSpeed = GameplayVars.PlayerStartSpeed;
+            barrierSpeed = GameplayVars.BarrierStartSpeed;
+
+            // Set Gameplay variables
+            chargeDecreaseRate = 0;
+            barrierSpeedUpRate = 0;
+
             levelGenerator.Reset();
+
+            // Set game state variables
+            isGameOver = false;
+            score = 0;
+            tempScore = 0;
+            globalCooldown = 0;
+            totalGlobalCooldown = 0;
+        }
+
+        private void InitializeTutorialBasic()
+        {
+            // Clear all existing world entities
+            ResetAllLists();
+
+            // Initialize the general tutorial world
+            InitializeTutorialWorld();
+
+            //Create the initial objects
+            player = new Player(new Rectangle(GameplayVars.PlayerStartX, LevelGenerationVars.Tier2Height - 110, GameplayVars.StartPlayerWidth, GameplayVars.StartPlayerHeight), ChargeMain.PlayerTex); //The player character
+            backBarrier = null;
+            frontBarrier = null;
+
+            // Set tutorial variables
+            hasDoubleJumped = false;
+            hasDischarged = false;
+            hasShot = false;
+            hasOvercharged = false;
+        }
+
+        private void InitializeTutorialDischarge()
+        {
+            SetGlobalCooldown(0);
+            barrierSpeed = playerSpeed; // We want the barrier to be moving at the same speed as the player for the tutorial
+            barrierSpeedUpRate = 0; // We want the barriers to be at a constant speed for the tutorial
+            frontBarrier = new Barrier(new Rectangle(player.position.X + 150, -50, GameplayVars.BarrierWidth, GameplayVars.WinHeight + 100), ChargeMain.BarrierTex, ChargeMain.WhiteTex);
+            backBarrier = new Barrier(new Rectangle(GameplayVars.BackBarrierStartX - (GameplayVars.WinWidth - frontBarrier.position.X), -50, GameplayVars.BarrierWidth, GameplayVars.WinHeight + 100), ChargeMain.BarrierTex, ChargeMain.WhiteTex);
+        }
+
+        private void InitializeTutorialShoot()
+        {
+            SetGlobalCooldown(0);
+            barrierSpeed = playerSpeed; // We want the barrier to be moving at the same speed as the player for the tutorial
+            //barrierSpeedUpRate = 0; // We want the barriers to be at a constant speed for the tutorial
+            //frontBarrier = new Barrier(new Rectangle(player.position.X + 150, -50, GameplayVars.BarrierWidth, GameplayVars.WinHeight + 100), ChargeMain.BarrierTex, ChargeMain.WhiteTex);
+        }
+
+        private void InitializeTutorialOvercharge()
+        {
+            SetGlobalCooldown(0);
+            barrierSpeed = playerSpeed; // We want the barrier to be moving at the same speed as the player for the tutorial
+            barrierSpeedUpRate = 0; // We want the barriers to be at a constant speed for the tutorial
+        }
+
+        private void InitializeTutorialWorld()
+        {
+            // Set the initial speeds
+            playerSpeed = GameplayVars.PlayerStartSpeed;
+            barrierSpeed = GameplayVars.BarrierStartSpeed;
+
+            // Set Gameplay variables
+            chargeDecreaseRate = 0;
+            barrierSpeedUpRate = 0;
+
+            //Reset the level generator.
+            levelGenerator.Reset();
+
+            // Set game state variables
+            isGameOver = false;
+            score = 0;
+            tempScore = 0;
+            globalCooldown = 0;
+            totalGlobalCooldown = 0;
+
+            LoadPlatformsForTutorialStart();
         }
 
         /// <summary>
@@ -1077,6 +1147,23 @@ namespace Charge
             //Add them to the platform list
             platforms.Add(tier1);
             platforms.Add(tier2);
+            platforms.Add(startPlat);
+        }
+
+        /// <summary>
+        /// Loads the initial platform for the start of the tutorial
+        /// </summary>
+        private void LoadPlatformsForTutorialStart()
+        {
+            //Long floor to catch player at the beginning of the game
+            int startPlatWidth = GameplayVars.WinWidth;
+            startPlatWidth -= (startPlatWidth % LevelGenerationVars.SegmentWidth); //Make it evenly split into segments
+            Platform startPlat = new Platform(new Rectangle(0, LevelGenerationVars.Tier3Height, startPlatWidth, LevelGenerationVars.PlatformHeight),
+                ChargeMain.PlatformLeftTex, ChargeMain.PlatformCenterTex, ChargeMain.PlatformRightTex, GetCurrentPlatformColor());
+            
+            levelGenerator.SetRightMost(startPlat, 2);
+
+            //Add them to the platform list
             platforms.Add(startPlat);
         }
     }

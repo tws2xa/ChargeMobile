@@ -90,7 +90,7 @@ namespace Charge
             highScores.Clear();
 
             // Opens the high score file with append set to false so that the existing data is overwritten.
-            FileStream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.OpenOrCreate);
+            FileStream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.Create);
             using (StreamWriter writer = new StreamWriter(highScoreFileStream))
             {
                 for (int i = 0; i < GameplayVars.NumScores - 1; i++)

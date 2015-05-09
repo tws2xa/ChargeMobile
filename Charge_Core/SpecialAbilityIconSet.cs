@@ -39,8 +39,23 @@ namespace Charge
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            DrawDischargeIcon(spriteBatch);
+            DrawShootIcon(spriteBatch);
+            DrawOverChargeIcon(spriteBatch);
+        }
+
+        public void DrawDischargeIcon(SpriteBatch spriteBatch)
+        {
             dischargeIcon.Draw(spriteBatch);
+        }
+
+        public void DrawShootIcon(SpriteBatch spriteBatch)
+        {
             shootIcon.Draw(spriteBatch);
+        }
+
+        public void DrawOverChargeIcon(SpriteBatch spriteBatch)
+        {
             overchargeIcon.Draw(spriteBatch);
         }
 

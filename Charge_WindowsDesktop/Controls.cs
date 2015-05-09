@@ -209,5 +209,25 @@ namespace Charge
         {
             return "Press [P]";
         }
+
+        public string GetJumpString()
+        {
+            return "Press [Space]";
+        }
+
+        public string GetDischargeString()
+        {
+            return "Press [A]";
+        }
+
+        public string GetShootString()
+        {
+            return "Press [S]";
+        }
+
+        public string GetOverchargeString()
+        {
+            return "Press [D]";
+        }
     }
 }
