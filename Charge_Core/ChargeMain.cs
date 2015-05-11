@@ -155,8 +155,8 @@ namespace Charge
         protected override void Initialize()
         {
             //Set window size
-            graphics.PreferredBackBufferWidth = GameplayVars.WinWidth / 2;
-            graphics.PreferredBackBufferHeight = GameplayVars.WinHeight / 2;
+            //graphics.PreferredBackBufferWidth = GameplayVars.WinWidth / 2;
+            //graphics.PreferredBackBufferHeight = GameplayVars.WinHeight / 2;
 
             controls = new Controls();
             highScoreManager = new HighScoreManager();

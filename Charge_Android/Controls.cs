@@ -423,7 +423,7 @@ namespace Charge
 
         public string GetJumpString()
         {
-            return "Tap the left side of the screen";
+            return "Tap the right side of the screen";
         }
 
         public string GetDischargeString()
@@ -433,7 +433,7 @@ namespace Charge
 
         public string GetShootString()
         {
-            return "Swipe Up";
+            return "Swipe Down";
         }
 
         public string GetOverchargeString()
