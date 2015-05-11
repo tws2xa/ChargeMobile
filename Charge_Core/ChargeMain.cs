@@ -55,7 +55,6 @@ namespace Charge
             InGame,
             Paused,
             GameOver,
-            TutorialExplain,
             TutorialJump,
             TutorialDischarge,
             TutorialShoot,
@@ -73,6 +72,7 @@ namespace Charge
         {
             Volume,
             ClearHighScores,
+            Tutorial,
             Back
         };
 
@@ -171,6 +171,10 @@ namespace Charge
             ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
 
             tutorialMessages = new List<TutorialMessage>();
+            EndTutorialDischargeMessageId = -1; // Avoid bugs caused by this value evaulating to 0 before it is set
+            EndTutorialJumpMessageId = -1;
+            EndTutorialOverchargeMessageId = -1;
+            EndTutorialShootMessageId = -1;
             
             //Initialize Monogame Stuff
             base.Initialize();
@@ -297,14 +301,6 @@ namespace Charge
                 // Update the charge bar colors
                 UpdateChargeBar();
             }
-            else if (currentGameState == GameState.TutorialExplain && tutorialMessages.Count == 0)
-            {
-                // We have shown all of the explainatory messages, so transition to the jump tutorial.
-                currentGameState = GameState.TutorialJump;
-                gameWorld.InitializeStateSpecificVariables(currentGameState);
-
-                LoadTutorialJumpMessages();
-            }
             else if (currentGameState == GameState.TutorialJump && gameWorld.PlayerHasCompletedTutorialJump())
             {
                 currentGameState = GameState.TutorialDischarge;
@@ -364,6 +360,12 @@ namespace Charge
                 highScoreManager.updateHighScore(gameWorld.GetScore());
 
                 currentGameState = GameState.GameOver;
+            }
+
+            // Need to update charge bar colors for tutorial states
+            if (IsTutorialState(currentGameState))
+            {
+                UpdateChargeBar();
             }
 
             // Update the pixel effect
@@ -524,6 +526,7 @@ namespace Charge
             Color volumeColor = Color.White;
             Color backColor = Color.White;
             Color clearColor = Color.White;
+            Color tutorialColor = Color.White;
 
             if (currentOptionSelection == OptionSelection.Volume)
             {
@@ -536,6 +539,10 @@ namespace Charge
             else if (currentOptionSelection == OptionSelection.ClearHighScores)
             {
                 clearColor = Color.Gold;
+            }
+            else if (currentOptionSelection == OptionSelection.Tutorial)
+            {
+                tutorialColor = Color.Gold;
             }
 
             String Volume = "Master Volume: ";
@@ -551,9 +558,13 @@ namespace Charge
             int ClearDrawX = GetCenteredStringLocation(FontSmall, ClearHighScoresText, GameplayVars.WinWidth / 2);
             spriteBatch.DrawString(FontSmall, ClearHighScoresText, new Vector2(ClearDrawX, 300), clearColor);
 
+            String tutorial = "Play Tutorial";
+            int tutorialDrawX = GetCenteredStringLocation(FontSmall, tutorial, GameplayVars.WinWidth / 2);
+            spriteBatch.DrawString(FontSmall, tutorial, new Vector2(tutorialDrawX, 350), tutorialColor);
+
             String Back = "Back";
             int BackDrawX = GetCenteredStringLocation(FontSmall, Back, GameplayVars.WinWidth / 2);
-            spriteBatch.DrawString(FontSmall, Back, new Vector2(BackDrawX, 350), backColor);
+            spriteBatch.DrawString(FontSmall, Back, new Vector2(BackDrawX, 400), backColor);
         }
 
         private void DrawCreditsScreen(SpriteBatch spriteBatch)
@@ -862,6 +873,15 @@ namespace Charge
                     currentOptionSelection++;
                 }
 
+                if (controls.MenuSelectTrigger() && currentOptionSelection == OptionSelection.Tutorial)
+                {
+                    currentGameState = GameState.TutorialJump;
+                    gameWorld.InitializeStateSpecificVariables(currentGameState);
+
+                    LoadTutorialExplainMessages();
+                    LoadTutorialJumpMessages();
+                }
+
                 if (controls.MenuDecreaseTrigger() && currentOptionSelection == OptionSelection.Volume)
                 {
                     masterVolume -= GameplayVars.VolumeChangeAmount;
@@ -953,7 +973,7 @@ namespace Charge
             else if (IsTutorialState(currentGameState))
             {
                 // Player has pressed the jump command (A button on controller, space bar on keyboard)
-                if (currentGameState != GameState.TutorialExplain && controls.JumpTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialJumpMessageId)
+                if (controls.JumpTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialJumpMessageId)
                 {
                     gameWorld.InitiateJump();
                 }
@@ -1381,7 +1401,7 @@ namespace Charge
         /// <returns></returns>
         private bool IsTutorialState(GameState gameState)
         {
-            return gameState == GameState.TutorialExplain || gameState == GameState.TutorialJump || gameState == GameState.TutorialDischarge || gameState == GameState.TutorialOvercharge || gameState == GameState.TutorialShoot;
+            return gameState == GameState.TutorialJump || gameState == GameState.TutorialDischarge || gameState == GameState.TutorialOvercharge || gameState == GameState.TutorialShoot;
         }
     }
 }

@@ -607,7 +607,7 @@ namespace Charge
         /// </summary>
         private bool IsTutorialLevel(ChargeMain.GameState gameState)
         {
-            return gameState == ChargeMain.GameState.TutorialDischarge || gameState == ChargeMain.GameState.TutorialJump || gameState == ChargeMain.GameState.TutorialOvercharge || gameState == ChargeMain.GameState.TutorialShoot || gameState == ChargeMain.GameState.TutorialExplain;
+            return gameState == ChargeMain.GameState.TutorialDischarge || gameState == ChargeMain.GameState.TutorialJump || gameState == ChargeMain.GameState.TutorialOvercharge || gameState == ChargeMain.GameState.TutorialShoot;
         }
 
         /// <summary>
