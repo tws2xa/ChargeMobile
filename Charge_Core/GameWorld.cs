@@ -212,7 +212,7 @@ namespace Charge
         {
             SoundEffectInstance soundInstance = sound.CreateInstance();
             soundInstance.Volume = masterVolume;
-
+            
             soundInstance.Play();
         }
 

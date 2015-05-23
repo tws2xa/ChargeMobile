@@ -892,6 +892,7 @@ namespace Charge
                     }
 
                     MediaPlayer.Volume = masterVolume;
+                    gameWorld.SetMasterVolume(masterVolume);
                 }
 
                 if (controls.MenuIncreaseTrigger() && currentOptionSelection == OptionSelection.Volume)
@@ -904,6 +905,7 @@ namespace Charge
                     }
 
                     MediaPlayer.Volume = masterVolume;
+                    gameWorld.SetMasterVolume(masterVolume);
                 }
             }
             else if (currentGameState == GameState.InGame)
@@ -1095,7 +1097,7 @@ namespace Charge
             settings.DocumentElement.LastChild.AppendChild(tutorialText);
 
             // Get the file
-            FileStream settingsFileStream = FileSystemManager.GetFileStream(GameplayVars.UserSettingsFile, FileMode.OpenOrCreate);
+            FileStream settingsFileStream = FileSystemManager.GetFileStream(GameplayVars.UserSettingsFile, FileMode.Create);
 
             settings.Save(settingsFileStream);
 
