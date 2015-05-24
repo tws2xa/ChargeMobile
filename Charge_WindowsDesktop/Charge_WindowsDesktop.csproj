@@ -119,6 +119,7 @@
     </Compile>
     <Compile Include="Controls.cs" />
     <Compile Include="FileSystemManager.cs" />
+    <Compile Include="MainMenuManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

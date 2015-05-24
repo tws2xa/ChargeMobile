@@ -61,21 +61,6 @@ namespace Charge
             TutorialOvercharge
         };
 
-        enum TitleSelection
-        {
-            Start,
-            Options,
-            Credits
-        };
-
-        enum OptionSelection
-        {
-            Volume,
-            ClearHighScores,
-            Tutorial,
-            Back
-        };
-
         enum PlayerLevel
         {
             Level1,
@@ -85,15 +70,15 @@ namespace Charge
             Level5
         };
 
-        private GameState currentGameState;
-        private TitleSelection currentTitleSelection;
-        private OptionSelection currentOptionSelection;
+        internal GameState currentGameState;
+
+        MainMenuManager mainMenuManager;
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         
         // User Settings
-        private float masterVolume;
+        public static float masterVolume;
         private bool showTutorial;
         
         private Song TitleMusic;
@@ -107,9 +92,7 @@ namespace Charge
 
         private int middlePinWidth = 30;
         private int middlePinHeight = 30;
-
-        private String ClearHighScoresText;
-        
+                
         private HighScoreManager highScoreManager;
 
         // UI variables
@@ -167,9 +150,7 @@ namespace Charge
             currentGameState = GameState.TitleScreen;
             
             controls.Reset();
-
-            ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
-
+            
             tutorialMessages = new List<TutorialMessage>();
             EndTutorialDischargeMessageId = -1; // Avoid bugs caused by this value evaulating to 0 before it is set
             EndTutorialJumpMessageId = -1;
@@ -261,6 +242,8 @@ namespace Charge
             int iconSpacer = 0;
             int iconY = GameplayVars.WinHeight - SpecialAbilityIconSet.iconHeight - 10;
             specialAbilityIcons = new SpecialAbilityIconSet(iconSpacer + 10, iconY, iconSpacer, DischargeIconTex, ShootIconTex, OverchargeIconTex, WhiteTex);
+
+            mainMenuManager = new MainMenuManager(WhiteTex, FontLarge, FontSmall);
 
             chargeBar = new ChargeBar(new Rectangle(GameplayVars.WinWidth / 4, GameplayVars.ChargeBarY, GameplayVars.WinWidth / 2, GameplayVars.ChargeBarHeight), ChargeBarTex, GameplayVars.ChargeBarLevelColors[0], GameplayVars.ChargeBarLevelColors[1]);
         }
@@ -485,86 +468,12 @@ namespace Charge
 
         private void DrawTitleScreen(SpriteBatch spriteBatch)
         {
-            //Draw Title Menu
-            String Title = "CHARGE";
-            String Options = "Options";
-            String Start = "Start Game";
-            String Credits = "Credits";
-            int TitleDrawX = GetCenteredStringLocation(FontLarge, Title, GameplayVars.WinWidth / 2);
-            int OptionsDrawX = GetCenteredStringLocation(FontSmall, Options, GameplayVars.WinWidth / 2);
-            int CreditsDrawX = GetCenteredStringLocation(FontSmall, Credits, GameplayVars.WinWidth / 2);
-            int StartDrawX = GetCenteredStringLocation(FontSmall, Start, GameplayVars.WinWidth / 2);
-            DrawStringWithShadow(spriteBatch, Title, new Vector2(TitleDrawX, 100), Color.WhiteSmoke, Color.Black, FontLarge);
-
-            if (currentTitleSelection == TitleSelection.Start)
-            {
-                DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250), Color.Gold, Color.Black);
-                DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325));
-                DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400));
-            }
-            else if (currentTitleSelection == TitleSelection.Options)
-            {
-                DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250));
-                DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325), Color.Gold, Color.Black);
-                DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400));
-            }
-            else if (currentTitleSelection == TitleSelection.Credits)
-            {
-                DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250));
-                DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325));
-                DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400), Color.Gold, Color.Black);
-            }
+            mainMenuManager.DrawTitleScreen(spriteBatch);
         }
 
         private void DrawOptionsScreen(SpriteBatch spriteBatch)
         {
-            String Title = "Options";
-            int TitleDrawX = GetCenteredStringLocation(FontSmall, Title, GameplayVars.WinWidth / 2);
-            spriteBatch.DrawString(FontSmall, Title, new Vector2(TitleDrawX, 25), Color.White);
-
-            // Set the color for the selected and unselected menu items
-            Color volumeColor = Color.White;
-            Color backColor = Color.White;
-            Color clearColor = Color.White;
-            Color tutorialColor = Color.White;
-
-            if (currentOptionSelection == OptionSelection.Volume)
-            {
-                volumeColor = Color.Gold;
-            }
-            else if (currentOptionSelection == OptionSelection.Back)
-            {
-                backColor = Color.Gold;
-            }
-            else if (currentOptionSelection == OptionSelection.ClearHighScores)
-            {
-                clearColor = Color.Gold;
-            }
-            else if (currentOptionSelection == OptionSelection.Tutorial)
-            {
-                tutorialColor = Color.Gold;
-            }
-
-            String Volume = "Master Volume: ";
-            int VolumeDrawX = GetCenteredStringLocation(FontSmall, Volume, GameplayVars.WinWidth / 4);
-            spriteBatch.DrawString(FontSmall, Volume, new Vector2(VolumeDrawX, 150), volumeColor);
-
-            // Draw the volume slider bar
-            int volumeBarLeft = Convert.ToInt32(Math.Round(3 * GameplayVars.WinWidth / 4.0f - ((GameplayVars.WinWidth / 3.0f + 5) / 2.0f)));
-            int maxWidth = Convert.ToInt32(GameplayVars.WinWidth / 3) + 5;
-            spriteBatch.Draw(WhiteTex, new Rectangle(volumeBarLeft, 162, maxWidth, 20), new Color(100, 100, 100));
-            spriteBatch.Draw(WhiteTex, new Rectangle(volumeBarLeft, 162, Convert.ToInt32(masterVolume * GameplayVars.WinWidth / 3) + 5, 20), volumeColor);
-
-            int ClearDrawX = GetCenteredStringLocation(FontSmall, ClearHighScoresText, GameplayVars.WinWidth / 2);
-            spriteBatch.DrawString(FontSmall, ClearHighScoresText, new Vector2(ClearDrawX, 300), clearColor);
-
-            String tutorial = "Play Tutorial";
-            int tutorialDrawX = GetCenteredStringLocation(FontSmall, tutorial, GameplayVars.WinWidth / 2);
-            spriteBatch.DrawString(FontSmall, tutorial, new Vector2(tutorialDrawX, 350), tutorialColor);
-
-            String Back = "Back";
-            int BackDrawX = GetCenteredStringLocation(FontSmall, Back, GameplayVars.WinWidth / 2);
-            spriteBatch.DrawString(FontSmall, Back, new Vector2(BackDrawX, 400), backColor);
+            mainMenuManager.DrawOptionsScreen(spriteBatch);
         }
 
         private void DrawCreditsScreen(SpriteBatch spriteBatch)
@@ -717,7 +626,7 @@ namespace Charge
             DrawStringWithShadow(spriteBatch, controls.GetUnpauseText() + " to resume.", new Vector2(15, 15 + lineHeight));
         }
 
-        private int GetCenteredStringLocation(SpriteFont theFont, String str, int center)
+        public static int GetCenteredStringLocation(SpriteFont theFont, String str, int center)
         {
             return Convert.ToInt32(Math.Round(center - theFont.MeasureString(str).X / 2));
         }
@@ -738,7 +647,7 @@ namespace Charge
         /// </summary>
         /// <param name="text">Text to draw</param>
         /// <param name="location">Upper left corner of string</param>
-        void DrawStringWithShadow(SpriteBatch spriteBatch, String text, Vector2 location)
+        public static void DrawStringWithShadow(SpriteBatch spriteBatch, String text, Vector2 location)
         {
             DrawStringWithShadow(spriteBatch, text, location, Color.WhiteSmoke, Color.Black);
         }
@@ -750,7 +659,7 @@ namespace Charge
         /// <param name="location">Upper left corner of string</param>
         /// <param name="backColor">Shadow Color</param>
         /// <param name="textColor">Main text Color</param>
-        void DrawStringWithShadow(SpriteBatch spriteBatch, String text, Vector2 location, Color textColor, Color backColor)
+        public static void DrawStringWithShadow(SpriteBatch spriteBatch, String text, Vector2 location, Color textColor, Color backColor)
         {
             DrawStringWithShadow(spriteBatch, text, location, textColor, backColor, FontSmall);
         }
@@ -763,7 +672,7 @@ namespace Charge
         /// <param name="backColor">Shadow Color</param>
         /// <param name="textColor">Main text Color</param>
         /// <param name="font">The font to use</param>
-        void DrawStringWithShadow(SpriteBatch spriteBatch, String text, Vector2 location, Color textColor, Color backColor, SpriteFont font)
+        public static void DrawStringWithShadow(SpriteBatch spriteBatch, String text, Vector2 location, Color textColor, Color backColor, SpriteFont font)
         {
             spriteBatch.DrawString(font, text, new Vector2(location.X + 2, location.Y + 2), backColor);
             spriteBatch.DrawString(font, text, location, textColor);
@@ -776,137 +685,15 @@ namespace Charge
         {
             if (currentGameState == GameState.TitleScreen)
             {
-                if (controls.MenuUpTrigger())
-                {
-                    if (currentTitleSelection > 0)
-                    {
-                        currentTitleSelection--;
-                    }
-                }
-                else if (controls.MenuDownTrigger())
-                {
-                    if (currentTitleSelection < TitleSelection.Credits)
-                    {
-                        currentTitleSelection++;
-                    }
-                }
-
-                if (controls.MenuSelectTrigger())
-                {
-                    if (currentTitleSelection == TitleSelection.Start)
-                    {
-                        if (showTutorial)
-                        {
-                            currentGameState = GameState.TutorialJump;
-                            LoadTutorialExplainMessages();
-                            LoadTutorialJumpMessages();
-
-                            showTutorial = false;
-                            SaveUserSettings();
-                        }
-                        else
-                        {
-                            currentGameState = GameState.InGame;
-                        }
-
-                        gameWorld.InitializeStateSpecificVariables(currentGameState);
-
-                        // Stop any currently playing song, and play the in-game background music
-                        MediaPlayer.Stop();
-                        MediaPlayer.Play(ChargeMain.Background1);
-                        MediaPlayer.IsRepeating = true;
-                    }
-                    else if (currentTitleSelection == TitleSelection.Options)
-                    {
-                        currentGameState = GameState.OptionsScreen;
-                    }
-                    else if (currentTitleSelection == TitleSelection.Credits)
-                    {
-                        currentGameState = GameState.CreditsScreen;
-                    }
-                }
-            }
+                mainMenuManager.ProcessMainMenuInput(this, controls);
+            } 
             else if (currentGameState == GameState.CreditsScreen && controls.MenuSelectTrigger())
             {
                 currentGameState = GameState.TitleScreen;
             }
             else if (currentGameState == GameState.OptionsScreen)
             {
-                if (controls.MenuUpTrigger())
-                {
-                    if (currentOptionSelection > 0)
-                    {
-                        currentOptionSelection--;
-                    }
-
-                    // Once the user clears the high scores, we don't want that option to be selectable any more.
-                    if (currentOptionSelection == OptionSelection.ClearHighScores && ClearHighScoresText != GameplayVars.DefaultClearHighScoresText)
-                    {
-                        currentOptionSelection = OptionSelection.Volume;
-                    }
-                }
-                else if (controls.MenuDownTrigger())
-                {
-                    if (currentOptionSelection < OptionSelection.Back)
-                    {
-                        currentOptionSelection++;
-                    }
-
-                    // Once the user clears the high scores, we don't want that option to be selectable any more.
-                    if (currentOptionSelection == OptionSelection.ClearHighScores && ClearHighScoresText != GameplayVars.DefaultClearHighScoresText)
-                    {
-                        currentOptionSelection = OptionSelection.Back;
-                    }
-                }
-
-                if (controls.MenuSelectTrigger() && currentOptionSelection == OptionSelection.Back)
-                {
-                    ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
-                    currentGameState = GameState.TitleScreen;
-                    SaveUserSettings();
-                }
-
-                if (controls.MenuSelectTrigger() && currentOptionSelection == OptionSelection.ClearHighScores)
-                {
-                    highScoreManager.ClearHighScores();
-                    ClearHighScoresText = "High Scores Cleared";
-                    currentOptionSelection++;
-                }
-
-                if (controls.MenuSelectTrigger() && currentOptionSelection == OptionSelection.Tutorial)
-                {
-                    currentGameState = GameState.TutorialJump;
-                    gameWorld.InitializeStateSpecificVariables(currentGameState);
-
-                    LoadTutorialExplainMessages();
-                    LoadTutorialJumpMessages();
-                }
-
-                if (controls.MenuDecreaseTrigger() && currentOptionSelection == OptionSelection.Volume)
-                {
-                    masterVolume -= GameplayVars.VolumeChangeAmount;
-
-                    if (masterVolume < 0)
-                    {
-                        masterVolume = 0;
-                    }
-
-                    MediaPlayer.Volume = masterVolume;
-                    gameWorld.SetMasterVolume(masterVolume);
-                }
-
-                if (controls.MenuIncreaseTrigger() && currentOptionSelection == OptionSelection.Volume)
-                {
-                    masterVolume += GameplayVars.VolumeChangeAmount;
-
-                    if (masterVolume > 1)
-                    {
-                        masterVolume = 1;
-                    }
-
-                    MediaPlayer.Volume = masterVolume;
-                    gameWorld.SetMasterVolume(masterVolume);
-                }
+                mainMenuManager.ProcessOptionsInput(this, controls);
             }
             else if (currentGameState == GameState.InGame)
             {
@@ -1404,6 +1191,81 @@ namespace Charge
         private bool IsTutorialState(GameState gameState)
         {
             return gameState == GameState.TutorialJump || gameState == GameState.TutorialDischarge || gameState == GameState.TutorialOvercharge || gameState == GameState.TutorialShoot;
+        }
+
+        /// <summary>
+        /// Starts the game
+        /// </summary>
+        public void StartGame()
+        {
+            if (showTutorial)
+            {
+                currentGameState = GameState.TutorialJump;
+                LoadTutorialExplainMessages();
+                LoadTutorialJumpMessages();
+
+                showTutorial = false;
+                SaveUserSettings();
+            }
+            else
+            {
+                currentGameState = GameState.InGame;
+            }
+
+            gameWorld.InitializeStateSpecificVariables(currentGameState);
+
+            // Stop any currently playing song, and play the in-game background music
+            MediaPlayer.Stop();
+            MediaPlayer.Play(ChargeMain.Background1);
+            MediaPlayer.IsRepeating = true;
+        }
+
+        internal void TitleToOptionsScreen()
+        {
+            currentGameState = GameState.OptionsScreen;
+        }
+
+        internal void TitleToCreditsScene()
+        {
+            currentGameState = GameState.CreditsScreen;
+        }
+
+        internal void OptionsToTitleScreen()
+        {
+            currentGameState = GameState.TitleScreen;
+            SaveUserSettings();
+        }
+
+        internal void ClearHighScores()
+        {
+            highScoreManager.ClearHighScores();
+        }
+
+        internal void LaunchTutorial()
+        {
+            currentGameState = GameState.TutorialJump;
+            gameWorld.InitializeStateSpecificVariables(currentGameState);
+
+            LoadTutorialExplainMessages();
+            LoadTutorialJumpMessages();
+        }
+
+        internal void AdjustMasterVolume(float amt)
+        {
+            masterVolume += amt;
+
+            if (masterVolume < 0)
+            {
+                masterVolume = 0;
+            }
+
+            if (masterVolume > 1)
+            {
+                masterVolume = 1;
+            }
+
+            MediaPlayer.Volume = masterVolume;
+            gameWorld.SetMasterVolume(masterVolume);
         }
     }
 }

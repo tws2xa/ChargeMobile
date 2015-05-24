@@ -24,8 +24,7 @@ namespace Charge
         const int RIGHT_NUM = 3;
 
         TouchCollection touchCollection;
-        
-        int tapNum;
+        List<GestureSample> taps;
         
         int prevFingersDown;
         int fingersDown;
@@ -42,6 +41,8 @@ namespace Charge
         public Controls()
         {
             this.touchCollection = TouchPanel.GetState();
+            taps = new List<GestureSample>();
+
             TouchPanel.EnabledGestures = GestureType.Tap | GestureType.HorizontalDrag | GestureType.VerticalDrag | GestureType.DragComplete;
 
             jumpControlRegion = new Rectangle(GameplayVars.WinWidth / 2, 0, GameplayVars.WinWidth / 2, GameplayVars.WinHeight);
@@ -50,7 +51,6 @@ namespace Charge
             registeredAnyDrag = false;
             registeredInRegionDrag = false;
 
-            tapNum = 0;
             startedDrags = new int[] { 0, 0, 0, 0 };
             inRegionDrags = new int[] { 0, 0, 0, 0 };
             dragging = new bool[] { false, false, false, false };
@@ -75,7 +75,7 @@ namespace Charge
         /// </summary>
         public void Reset()
         {
-            tapNum = 0;
+            taps.Clear();
             startedDrags = new int[] { 0, 0, 0, 0 };
             inRegionDrags = new int[] { 0, 0, 0, 0 };
             dragging = new bool[] { false, false, false, false };
@@ -91,11 +91,8 @@ namespace Charge
             prevFingersDown = fingersDown;
             fingersDown = countFingersDown();
 
-            tapNum = 0;
-
-
             //Clear almost all counter variables (but not the start drags, those get cleared when a drag is complete)
-            tapNum = 0;
+            taps.Clear();
             for (int i = 0; i < startedDrags.Length; i++) { startedDrags[i] = 0; }
             for (int i = 0; i < startedDrags.Length; i++) { inRegionDrags[i] = 0; }
             for (int i = 0; i < endDrags.Length; i++) { endDrags[i] = false; }
@@ -105,7 +102,7 @@ namespace Charge
                 GestureSample gesture = TouchPanel.ReadGesture();
                 if (gesture.GestureType == GestureType.Tap)
                 {
-                    tapNum++;
+                    taps.Add(gesture);
                 }
 
                 if (gesture.GestureType == GestureType.HorizontalDrag)
@@ -183,7 +180,20 @@ namespace Charge
         #region Control Check Methods
         public bool Tap()
         {
-            return (tapNum > 0);
+            return (taps.Count > 0);
+        }
+
+        /// <summary>
+        /// Checks if there was a tap somewhere within a particular region
+        /// </summary>
+        /// <param name="location">Region in which to check for a tap</param>
+        public bool TapRegionCheck(Rectangle region)
+        {
+            foreach (GestureSample tap in taps)
+            {
+                if (region.Contains(tap.Position)) return true;
+            }
+            return false;
         }
 
         public bool FingerDown()

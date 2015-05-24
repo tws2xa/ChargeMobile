@@ -139,6 +139,7 @@
     <Compile Include="Activity1.cs" />
     <Compile Include="Controls.cs" />
     <Compile Include="FileSystemManager.cs" />
+    <Compile Include="MainMenuManager.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
