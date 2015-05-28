@@ -42,6 +42,9 @@ namespace Charge
 
         private String ClearHighScoresText;
 
+        // UI Buttons
+        Button skipTutorialButton;
+
         public MainMenuManager(Texture2D WhiteTex, SpriteFont FontLarge, SpriteFont FontSmall)
         {
             this.WhiteTex = WhiteTex;
@@ -52,6 +55,8 @@ namespace Charge
             currentOptionSelection = OptionSelection.Volume;
 
             ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
+
+            skipTutorialButton = new Button("Skip", new Rectangle(GameplayVars.WinWidth - 210, GameplayVars.WinHeight - 110, 200, 100), Color.Black, FontSmall, WhiteTex, Color.WhiteSmoke);
         }
 
         public void DrawTitleScreen(SpriteBatch spriteBatch)
@@ -136,6 +141,15 @@ namespace Charge
             String Back = "Back";
             int BackDrawX = ChargeMain.GetCenteredStringLocation(FontSmall, Back, GameplayVars.WinWidth / 2);
             spriteBatch.DrawString(FontSmall, Back, new Vector2(BackDrawX, 400), backColor);
+        }
+
+        /// <summary>
+        /// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
+        /// </summary>
+        /// <param name="spriteBatch"></param>
+        public void DrawSkipTutorial(SpriteBatch spriteBatch)
+        {
+            skipTutorialButton.Draw(spriteBatch);
         }
 
         public void ProcessMainMenuInput(ChargeMain main, Controls controls)
@@ -226,6 +240,11 @@ namespace Charge
             {
                 main.AdjustMasterVolume(GameplayVars.VolumeChangeAmount);
             }
+        }
+
+        internal bool SkipTutorialTriggered(Controls controls)
+        {
+            return controls.TapRegionCheck(skipTutorialButton.GetButtonRegion());
         }
     }
 }

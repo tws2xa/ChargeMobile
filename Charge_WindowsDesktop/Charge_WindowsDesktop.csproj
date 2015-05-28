@@ -48,6 +48,9 @@
     <Compile Include="..\Charge_Core\Barrier.cs">
       <Link>Charge_Core\Barrier.cs</Link>
     </Compile>
+    <Compile Include="..\Charge_Core\Button.cs">
+      <Link>Charge_Core\Button.cs</Link>
+    </Compile>
     <Compile Include="..\Charge_Core\ChargeBar.cs">
       <Link>Charge_Core\ChargeBar.cs</Link>
     </Compile>

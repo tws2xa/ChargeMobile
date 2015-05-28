@@ -187,6 +187,15 @@ namespace Charge
         }
 
         /// <summary>
+        /// Checks if the tutorial skip control has been triggered
+        /// </summary>
+        /// <returns></returns>
+        public bool TutorialSkipTrigger()
+        {
+            return onPress(Keys.Escape, Buttons.Start);
+        }
+
+        /// <summary>
         /// String explaining the control to start a new game.
         /// </summary>
         public string GetRestartString()

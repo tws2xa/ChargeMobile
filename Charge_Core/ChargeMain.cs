@@ -310,10 +310,7 @@ namespace Charge
             {
                 if (gameWorld.PlayerHasCompletedTutorialShoot())
                 {
-                    tutorialMessages.Clear();
-
-                    currentGameState = GameState.InGame;
-                    gameWorld.InitializeStateSpecificVariables(currentGameState);
+                    SwitchFromTutorialToInGame();
                 }
                 else if (gameWorld.GetHasShot() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialShootMessageId)
                 {
@@ -460,6 +457,9 @@ namespace Charge
                     // Draw the overcharge icon
                     specialAbilityIcons.DrawOverChargeIcon(spriteBatch);
                 }
+
+                // Draw the skip tutorial UI
+                mainMenuManager.DrawSkipTutorial(spriteBatch);
             }
 
             spriteBatch.End();
@@ -761,6 +761,12 @@ namespace Charge
             }
             else if (IsTutorialState(currentGameState))
             {
+                // Handle tutorial skip case
+                if (mainMenuManager.SkipTutorialTriggered(controls))
+                {
+                    SwitchFromTutorialToInGame();
+                }
+
                 // Player has pressed the jump command (A button on controller, space bar on keyboard)
                 if (controls.JumpTrigger() && tutorialMessages.Count > 0 && tutorialMessages[0].GetId() == EndTutorialJumpMessageId)
                 {
@@ -1191,6 +1197,17 @@ namespace Charge
         private bool IsTutorialState(GameState gameState)
         {
             return gameState == GameState.TutorialJump || gameState == GameState.TutorialDischarge || gameState == GameState.TutorialOvercharge || gameState == GameState.TutorialShoot;
+        }
+
+        /// <summary>
+        /// Switches the current game state from the tutorial to the in game state
+        /// </summary>
+        private void SwitchFromTutorialToInGame()
+        {
+            tutorialMessages.Clear();
+
+            currentGameState = GameState.InGame;
+            gameWorld.InitializeStateSpecificVariables(currentGameState);
         }
 
         /// <summary>

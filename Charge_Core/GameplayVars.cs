@@ -77,5 +77,7 @@ namespace Charge
         public static readonly String DefaultClearHighScoresText = "Clear High Scores";
 
         public static float DefaultTutorialMessageTimeout = 3.0f; // How long each tutorial message should appear on screen before disappearing (in seconds)
+
+        public static readonly Rectangle SkipTutorialTapLocation = new Rectangle(1000, 500, 200, 50);
     }
 }

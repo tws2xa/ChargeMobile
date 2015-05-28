@@ -138,6 +138,23 @@ namespace Charge
             spriteBatch.DrawString(FontSmall, Back, new Vector2(BackDrawX, 400), backColor);
         }
 
+        /// <summary>
+        /// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
+        /// </summary>
+        /// <param name="spriteBatch"></param>
+        public void DrawSkipTutorial(SpriteBatch spriteBatch)
+        {
+            String skipText = "Press [Escape] to skip";
+
+            // Put the text in the bottom right corner of the screen
+            Vector2 textSize = FontSmall.MeasureString(skipText);
+            float textX = GameplayVars.WinWidth - textSize.X;
+            float textY = GameplayVars.WinHeight - textSize.Y;
+            Vector2 textPosition = new Vector2(textX, textY);
+
+            spriteBatch.DrawString(FontSmall, skipText, textPosition, Color.WhiteSmoke);
+        }
+
         public void ProcessMainMenuInput(ChargeMain main, Controls controls)
         {
             if (controls.MenuUpTrigger())
@@ -226,6 +243,11 @@ namespace Charge
             {
                 main.AdjustMasterVolume(GameplayVars.VolumeChangeAmount);
             }
+        }
+
+        internal bool SkipTutorialTriggered(Controls controls)
+        {
+            return controls.TutorialSkipTrigger();
         }
     }
 }
