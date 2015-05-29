@@ -16,14 +16,6 @@ namespace Charge
 {
     class MainMenuManager
     {
-
-        enum TitleSelection
-        {
-            Start,
-            Options,
-            Credits
-        };
-
         enum OptionSelection
         {
             Volume,
@@ -32,7 +24,6 @@ namespace Charge
             Back
         };
 
-        private TitleSelection currentTitleSelection;
         private OptionSelection currentOptionSelection;
 
         SpriteFont FontLarge;
@@ -44,6 +35,17 @@ namespace Charge
 
         // UI Buttons
         Button skipTutorialButton;
+        Button beginButton;
+        Button optionsButton;
+        Button creditsButton;
+
+        //Title Menu Button Properties
+        SpriteFont titleButtonFont;
+        Color titleButtonTextColor;
+        Color titleButtonBackColor;
+        int titleButtonWidth;
+        int titleButtonHeight;
+        int titleButtonBorderSize;
 
         public MainMenuManager(Texture2D WhiteTex, SpriteFont FontLarge, SpriteFont FontSmall)
         {
@@ -51,12 +53,56 @@ namespace Charge
             this.FontLarge = FontLarge;
             this.FontSmall = FontSmall;
 
-            currentTitleSelection = TitleSelection.Start;
+            titleButtonFont = FontSmall;
+            titleButtonTextColor = new Color(0, 234, 6);
+            titleButtonBackColor = new Color(50, 50, 50);
+            titleButtonWidth = GameplayVars.WinWidth / 5;
+            titleButtonHeight = GameplayVars.WinHeight / 10;
+            titleButtonBorderSize = titleButtonWidth / 50; //Tiny border!
+
             currentOptionSelection = OptionSelection.Volume;
 
             ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
 
             skipTutorialButton = new Button("Skip", new Rectangle(GameplayVars.WinWidth - 210, GameplayVars.WinHeight - 110, 200, 100), Color.Black, FontSmall, WhiteTex, Color.WhiteSmoke);
+
+            // Button layout 1
+            // [options]  [             ]
+            //            |    begin    |
+            // [credits]  [             ]
+
+            int vSpacer = titleButtonHeight;
+            int hSpacer = titleButtonWidth * 1 / 4;
+
+            int centerPos = GameplayVars.WinWidth / 2;
+            int beginX = centerPos + hSpacer/ 2;
+            int optionsAndCreditsX = centerPos - hSpacer / 2 - titleButtonWidth;
+            int yPos = 5 * GameplayVars.WinHeight / 12; //Between 1/2 and 1/3
+            beginButton = new Button("Play  >", new Rectangle(beginX, yPos, titleButtonWidth, titleButtonHeight * 2 + vSpacer), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            optionsButton = new Button("Options", new Rectangle(optionsAndCreditsX, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            yPos += titleButtonHeight + vSpacer;
+            creditsButton = new Button("Credits", new Rectangle(optionsAndCreditsX, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            
+            
+            /*
+            // Button layout 2
+            // [  Begin  ]
+            // [ Options ]
+            // [ Credits ]
+            int xPos = GameplayVars.WinWidth / 2 - titleButtonWidth / 2;
+            int yPos = GameplayVars.WinHeight / 3;
+            beginButton = new Button("Play", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            yPos += titleButtonHeight * 3 / 2;
+            optionsButton = new Button("Options", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            yPos += titleButtonHeight * 3 / 2;
+            creditsButton = new Button("Credits", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            */
         }
 
         public void DrawTitleScreen(SpriteBatch spriteBatch)
@@ -72,24 +118,7 @@ namespace Charge
             int StartDrawX = ChargeMain.GetCenteredStringLocation(FontSmall, Start, GameplayVars.WinWidth / 2);
             ChargeMain.DrawStringWithShadow(spriteBatch, Title, new Vector2(TitleDrawX, 100), Color.WhiteSmoke, Color.Black, FontLarge);
 
-            if (currentTitleSelection == TitleSelection.Start)
-            {
-                ChargeMain.DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250), Color.Gold, Color.Black);
-                ChargeMain.DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325));
-                ChargeMain.DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400));
-            }
-            else if (currentTitleSelection == TitleSelection.Options)
-            {
-                ChargeMain.DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250));
-                ChargeMain.DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325), Color.Gold, Color.Black);
-                ChargeMain.DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400));
-            }
-            else if (currentTitleSelection == TitleSelection.Credits)
-            {
-                ChargeMain.DrawStringWithShadow(spriteBatch, Start, new Vector2(StartDrawX, 250));
-                ChargeMain.DrawStringWithShadow(spriteBatch, Options, new Vector2(OptionsDrawX, 325));
-                ChargeMain.DrawStringWithShadow(spriteBatch, Credits, new Vector2(CreditsDrawX, 400), Color.Gold, Color.Black);
-            }
+            DrawTitleMenuButtons(spriteBatch);
         }
 
         public void DrawOptionsScreen(SpriteBatch spriteBatch)
@@ -144,6 +173,17 @@ namespace Charge
         }
 
         /// <summary>
+        /// Draws the buttons for the title menu
+        /// </summary>
+        /// <param name="spriteBatch"></param>
+        public void DrawTitleMenuButtons(SpriteBatch spriteBatch)
+        {
+            beginButton.Draw(spriteBatch);
+            optionsButton.Draw(spriteBatch);
+            creditsButton.Draw(spriteBatch);
+        }
+
+        /// <summary>
         /// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
         /// </summary>
         /// <param name="spriteBatch"></param>
@@ -154,35 +194,17 @@ namespace Charge
 
         public void ProcessMainMenuInput(ChargeMain main, Controls controls)
         {
-            if (controls.MenuUpTrigger())
+            if (controls.TapRegionCheck(beginButton.GetButtonRegion()))
             {
-                if (currentTitleSelection > 0)
-                {
-                    currentTitleSelection--;
-                }
+                main.StartGame();
             }
-            else if (controls.MenuDownTrigger())
+            else if (controls.TapRegionCheck(optionsButton.GetButtonRegion()))
             {
-                if (currentTitleSelection < TitleSelection.Credits)
-                {
-                    currentTitleSelection++;
-                }
+                main.TitleToOptionsScreen();
             }
-
-            if (controls.MenuSelectTrigger())
+            else if (controls.TapRegionCheck(creditsButton.GetButtonRegion()))
             {
-                if (currentTitleSelection == TitleSelection.Start)
-                {
-                    main.StartGame();
-                }
-                else if (currentTitleSelection == TitleSelection.Options)
-                {
-                    main.TitleToOptionsScreen();
-                }
-                else if (currentTitleSelection == TitleSelection.Credits)
-                {
-                    main.TitleToCreditsScene();
-                }
+                main.TitleToCreditsScene();
             }
         }
 
