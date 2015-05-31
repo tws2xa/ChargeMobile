@@ -112,5 +112,10 @@ namespace Charge
         {
             return position;
         }
+
+        internal void SetText(string newText)
+        {
+            this.text = newText;
+        }
     }
 }
