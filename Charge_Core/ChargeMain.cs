@@ -120,14 +120,19 @@ namespace Charge
             graphics = new GraphicsDeviceManager(this);
             VirtualResolution.Init(ref graphics);
             Content.RootDirectory = "Content";
-
-            graphics.IsFullScreen = true;
-            
+			            
             VirtualResolution.SetVirtualResolution(GameplayVars.WinWidth, GameplayVars.WinHeight);
             VirtualResolution.SetResolution(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, true);
 
             graphics.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
         }
+
+		public void SetScreenSize(int width, int height)
+		{
+			graphics.PreferredBackBufferWidth = width;
+			graphics.PreferredBackBufferHeight = height;
+			VirtualResolution.SetResolution(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, false);
+		}
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
