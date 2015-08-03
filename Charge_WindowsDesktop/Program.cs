@@ -15,9 +15,9 @@ namespace Charge_WindowsDesktop
         [STAThread]
         static void Main()
         {
-            using (var game = new ChargeMain())
-                game.Run();
-        }
+			using (var game = new ChargeMain())
+				game.Run();
+		}
     }
 #endif
 }

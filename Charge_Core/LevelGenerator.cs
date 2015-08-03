@@ -73,7 +73,7 @@ namespace Charge
             //If so, provide warning but still procceed.
             if (rightMostInTiers[tier] != null && rightMostInTiers[tier].position.X > newRight.position.X)
             {
-                Console.WriteLine("Warning: Setting Right-Most Platform in Tier " + tier + " to a Platform Left of the Current Right-Most.");
+                //Console.WriteLine("Warning: Setting Right-Most Platform in Tier " + tier + " to a Platform Left of the Current Right-Most.");
             }
             rightMostInTiers[tier] = newRight;
         }
@@ -301,7 +301,7 @@ namespace Charge
                         tierWithSomeChargeOrbs = 1;
                         break;
                     default:
-                        Console.WriteLine("Error in charge orb generation");
+                        //Console.WriteLine("Error in charge orb generation");
                         break;
                 }
             }

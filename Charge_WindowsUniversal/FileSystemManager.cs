@@ -12,12 +12,16 @@ namespace Charge
     {
         public static bool FileExists(String filename)
         {
-            return File.Exists(filename);
-        }
+			IsolatedStorageFile file = IsolatedStorageFile.GetUserStoreForApplication();
+
+			return file.FileExists(filename);
+		}
 
         public static Stream GetFileStream(String filename, FileMode fileMode)
         {
-            return new FileStream(filename, fileMode);
+            IsolatedStorageFile file = IsolatedStorageFile.GetUserStoreForApplication();
+
+            return file.OpenFile(filename, fileMode);
         }
     }
 }

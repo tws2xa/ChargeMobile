@@ -171,10 +171,10 @@ namespace Charge
             spriteBatch = new SpriteBatch(GraphicsDevice);
             
             //UI Textures
-            DischargeIconTex = this.Content.Load<Texture2D>("DischargeIcon");
-            ShootIconTex = this.Content.Load<Texture2D>("ShootIcon");
-            OverchargeIconTex = this.Content.Load<Texture2D>("OverchargeIcon");
-            WhiteTex = this.Content.Load<Texture2D>("White");
+            DischargeIconTex = Content.Load<Texture2D>("DischargeIcon");
+            ShootIconTex = Content.Load<Texture2D>("ShootIcon");
+            OverchargeIconTex = Content.Load<Texture2D>("OverchargeIcon");
+            WhiteTex = Content.Load<Texture2D>("White");
             MiddlePin = Content.Load<Texture2D>("MiddlePin");
             ChargeBarTex = Content.Load<Texture2D>("ChargeBar");
             BackgroundTex = Content.Load<Texture2D>("Background");
@@ -193,9 +193,9 @@ namespace Charge
             ChargeBarTex = Content.Load<Texture2D>("ChargeBar");
             Arrow = Content.Load<Texture2D>("Arrow");
 
-            //Fonts
-            FontSmall = this.Content.Load<SpriteFont>("fonts/OCR-A-Extended-24");
-            FontLarge = this.Content.Load<SpriteFont>("fonts/OCR-A-Extended-48");
+			//Fonts
+			FontSmall = Content.Load<SpriteFont>("fonts/OCR-A-Extended-24");
+			FontLarge = Content.Load<SpriteFont>("fonts/OCR-A-Extended-48");
 
             //Sound Effects
             shootSound = Content.Load<SoundEffect>("SoundFX/shoot");
@@ -208,8 +208,8 @@ namespace Charge
             rearmSound = Content.Load<SoundEffect>("SoundFX/Rearm");
 
             //BackgroundMusic
-            TitleMusic = Content.Load<Song>("BackgroundMusic/TitleLoop.wav");
-            Background1 = Content.Load<Song>("BackgroundMusic/Killing_Time.wav");
+            TitleMusic = Content.Load<Song>("BackgroundMusic/TitleLoop");
+            Background1 = Content.Load<Song>("BackgroundMusic/Killing_Time");
 
             InitializeContentDependentVariables();
         }
@@ -263,7 +263,7 @@ namespace Charge
             ProcessPlayerInput(); //Process input
 
             // Pause the game if it loses focus
-            if (currentGameState == GameState.InGame && !this.IsActive)
+            if (currentGameState == GameState.InGame && !IsActive)
             {
                 PauseGame();
             }
@@ -890,11 +890,10 @@ namespace Charge
             settings.DocumentElement.LastChild.AppendChild(tutorialText);
 
             // Get the file
-            FileStream settingsFileStream = FileSystemManager.GetFileStream(GameplayVars.UserSettingsFile, FileMode.Create);
-
-            settings.Save(settingsFileStream);
-
-            settingsFileStream.Close();
+            using (Stream settingsFileStream = FileSystemManager.GetFileStream(GameplayVars.UserSettingsFile, FileMode.Create))
+            {
+                settings.Save(settingsFileStream);
+            }
         }
 
         private void LoadUserSettings()
@@ -902,24 +901,23 @@ namespace Charge
             // Load user volume settings
             if (FileSystemManager.FileExists(GameplayVars.UserSettingsFile))
             {
-                FileStream settingsFileStream = FileSystemManager.GetFileStream(GameplayVars.UserSettingsFile, FileMode.Open);
+                using (Stream settingsFileStream = FileSystemManager.GetFileStream(GameplayVars.UserSettingsFile, System.IO.FileMode.Open))
+                {
+                    XmlDocument settings = new XmlDocument();
+                    settings.Load(settingsFileStream);
 
-                XmlDocument settings = new XmlDocument();
-                settings.Load(settingsFileStream);
+                    // Get the user's volume information
+                    XmlNode volumeNode = settings.GetElementsByTagName("volume").Item(0);
+                    String volumeAsText = volumeNode.InnerText;
 
-                // Get the user's volume information
-                XmlNode volumeNode = settings.GetElementsByTagName("volume").Item(0);
-                String volumeAsText = volumeNode.InnerText;
-                
-                masterVolume = (float)Convert.ToDouble(volumeAsText);
+                    masterVolume = (float)Convert.ToDouble(volumeAsText);
 
-                // Get the info on whether the tutorial should be shown when the user first starts a game
-                XmlNode tutorialNode = settings.GetElementsByTagName("tutorial").Item(0);
-                String tutorialAsText = tutorialNode.InnerText;
+                    // Get the info on whether the tutorial should be shown when the user first starts a game
+                    XmlNode tutorialNode = settings.GetElementsByTagName("tutorial").Item(0);
+                    String tutorialAsText = tutorialNode.InnerText;
 
-                showTutorial = Convert.ToBoolean(tutorialAsText);
-
-                settingsFileStream.Close();
+                    showTutorial = Convert.ToBoolean(tutorialAsText);
+                }
             }
             else
             {

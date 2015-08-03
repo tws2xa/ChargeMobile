@@ -13,7 +13,7 @@ namespace Charge
             return store.FileExists(filename);
         }
 
-        public static FileStream GetFileStream(String filename, FileMode fileMode)
+        public static Stream GetFileStream(String filename, FileMode fileMode)
         {
             IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication();
 

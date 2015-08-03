@@ -30,13 +30,15 @@ namespace Charge
         {
             if (!FileSystemManager.FileExists(fileName))
             {
-                FileStream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.OpenOrCreate);
-                using(StreamWriter writer = new StreamWriter(highScoreFileStream)) {
-                    for (int i = 0; i < GameplayVars.NumScores - 1; i++)
-                        writer.Write("0 ");
-                    writer.Write("0");
+                using (Stream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.OpenOrCreate))
+                {
+                    using (StreamWriter writer = new StreamWriter(highScoreFileStream))
+                    {
+                        for (int i = 0; i < GameplayVars.NumScores - 1; i++)
+                            writer.Write("0 ");
+                        writer.Write("0");
+                    }
                 }
-                highScoreFileStream.Close();
             }
 
             LoadHighScores();
@@ -55,9 +57,9 @@ namespace Charge
             {
                 highScores.RemoveAt(GameplayVars.NumScores);
             }
-            
-            
-            FileStream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.OpenOrCreate);
+
+
+			Stream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.OpenOrCreate);
             using (StreamWriter writer = new StreamWriter(highScoreFileStream))
             {
                 for (int i = 0; i < highScores.Count() - 1; i++)
@@ -89,8 +91,8 @@ namespace Charge
         {
             highScores.Clear();
 
-            // Opens the high score file with append set to false so that the existing data is overwritten.
-            FileStream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.Create);
+			// Opens the high score file with append set to false so that the existing data is overwritten.
+			Stream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.Create);
             using (StreamWriter writer = new StreamWriter(highScoreFileStream))
             {
                 for (int i = 0; i < GameplayVars.NumScores - 1; i++)
@@ -108,7 +110,7 @@ namespace Charge
         {
             //Processing data in the list of scores
             highScores = new List<Int32>();
-            FileStream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.Open);
+			Stream highScoreFileStream = FileSystemManager.GetFileStream("HighScores.txt", FileMode.Open);
             using (StreamReader reader = new StreamReader(highScoreFileStream))
             {
                 String line = reader.ReadLine();

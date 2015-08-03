@@ -29,9 +29,6 @@ namespace Charge
         private OverchargeState overchargeState;
 
         // Animation variables
-        private Rectangle spriteSrcRect;
-        private double timeElapsedSinceLastFrameUpdate; // The cumulative time that has passed since the animation frame was last updated
-        private int currentFrameNum;
         private int frameWidth;
 
 		/// <summary>
@@ -43,10 +40,7 @@ namespace Charge
             jmpNum = 0;
             grounded = false;
             isDead = false;
-
-            spriteSrcRect = new Rectangle();
-            timeElapsedSinceLastFrameUpdate = 0;
-            currentFrameNum = 0;
+			
             frameWidth = tex.Width / NumAnimationFrames;
 
             SetCharge(2 * GameplayVars.ChargeBarCapacity / 3);	// Init the player charge level to half of the max
