@@ -127,11 +127,11 @@ namespace Charge
             graphics.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
         }
 
-		public void SetScreenSize(int width, int height)
+		public void SetScreenSize(int width, int height, bool isFullScreen)
 		{
 			graphics.PreferredBackBufferWidth = width;
 			graphics.PreferredBackBufferHeight = height;
-			VirtualResolution.SetResolution(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, false);
+			VirtualResolution.SetResolution(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, isFullScreen);
 		}
 
         /// <summary>
