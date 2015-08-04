@@ -66,6 +66,8 @@ namespace Charge
         public static int MinPlatformBrightness = 255; //255 = fully bright
 
         public static int NumScores = 10;
+
+		public static bool isTouchMode = false; // Indicates whether the app should operate in touch or keyboard mode. Should be set by the Main class for each platform
         
         public static readonly String UserSettingsFile = "UserSettings.txt";
         

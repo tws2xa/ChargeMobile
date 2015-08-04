@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Input;
 #endregion
 
 namespace Charge
@@ -123,14 +124,32 @@ namespace Charge
 			            
             VirtualResolution.SetVirtualResolution(GameplayVars.WinWidth, GameplayVars.WinHeight);
             VirtualResolution.SetResolution(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, true);
-
+			
             graphics.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
+
+			// Allow mouse input if not in touch mode
+			if (GameplayVars.isTouchMode)
+			{
+				IsMouseVisible = false;
+			}
+			else
+			{
+				IsMouseVisible = true;
+			}
         }
 
+		/// <summary>
+		/// Adjusts the game window size to match the containing window size
+		/// </summary>
+		/// <param name="width">Width of containing window</param>
+		/// <param name="height">Height of containing window</param>
+		/// <param name="isFullScreen">Is the containing window fullscreen</param>
 		public void SetScreenSize(int width, int height, bool isFullScreen)
 		{
 			graphics.PreferredBackBufferWidth = width;
 			graphics.PreferredBackBufferHeight = height;
+			graphics.IsFullScreen = isFullScreen;
+			
 			VirtualResolution.SetResolution(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, isFullScreen);
 		}
 

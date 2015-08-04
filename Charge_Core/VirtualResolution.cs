@@ -191,5 +191,27 @@ namespace Charge
             _Device.GraphicsDevice.Viewport = viewport;
         }
 
+		public static Point GetTransformationForMouseClicks()
+		{
+			float targetAspectRatio = getVirtualAspectRatio();
+			// figure out the largest area that fits in this resolution at the desired aspect ratio
+			int width = _Device.PreferredBackBufferWidth;
+			int height = (int)(width / targetAspectRatio + .5f);
+
+			if (height > _Device.PreferredBackBufferHeight)
+			{
+				height = _Device.PreferredBackBufferHeight;
+				// PillarBox
+				width = (int)(height * targetAspectRatio + .5f);
+			}
+
+			// set up the new viewport centered in the backbuffer
+			Point transformation = new Point();
+
+			transformation.X = (_Device.PreferredBackBufferWidth / 2) - (width / 2);
+			transformation.Y = (_Device.PreferredBackBufferHeight / 2) - (height / 2);
+
+			return transformation;
+		}
     }
 }

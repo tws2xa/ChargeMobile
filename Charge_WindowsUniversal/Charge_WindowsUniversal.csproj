@@ -207,9 +207,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="Content\fonts\OCR-A-Extended-24.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="Content\fonts\OCR-A-Extended-48.xnb" />
+    <Content Include="Content\fonts\OCR-A-Extended-48.xnb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\SoundFX\charge_collect.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

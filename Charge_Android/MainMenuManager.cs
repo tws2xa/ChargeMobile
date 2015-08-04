@@ -110,23 +110,6 @@ namespace Charge
             yPos += titleButtonHeight + vSpacer;
             creditsButton = new Button("Credits", new Rectangle(optionsAndCreditsX, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
                 titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
-
-            /*
-            // Button layout 2
-            // [  Begin  ]
-            // [ Options ]
-            // [ Credits ]
-            int xPos = GameplayVars.WinWidth / 2 - titleButtonWidth / 2;
-            int yPos = GameplayVars.WinHeight / 3;
-            beginButton = new Button("Play", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
-                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
-            yPos += titleButtonHeight * 3 / 2;
-            optionsButton = new Button("Options", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
-                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
-            yPos += titleButtonHeight * 3 / 2;
-            creditsButton = new Button("Credits", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
-                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
-            */
         }
 
         public void InitOptionsButtons()
