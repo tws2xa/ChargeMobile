@@ -342,7 +342,7 @@ namespace Charge
 			mousePosition.X -= mouseTransformation.X;
 			mousePosition.Y -= mouseTransformation.Y;
 			
-			return mouseState.LeftButton == ButtonState.Pressed && scaledRegion.Contains(mousePosition);
+			return scaledRegion.Contains(mousePosition);
 		}
 
 		private void InitializeKeyboardControls()

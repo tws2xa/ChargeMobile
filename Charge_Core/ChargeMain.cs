@@ -571,9 +571,10 @@ namespace Charge
             DrawStringWithShadow(spriteBatch, url, new Vector2(urlDrawX, yPos)); //400
             yPos += medGapSize;
 
-            String Back = "Back";
+			/*String Back = "Back";
             int BackDrawX = GetCenteredStringLocation(FontSmall, Back, GameplayVars.WinWidth / 2);
-            DrawStringWithShadow(spriteBatch, Back, new Vector2(BackDrawX, yPos), Color.Yellow, Color.Black); //450
+            DrawStringWithShadow(spriteBatch, Back, new Vector2(BackDrawX, yPos), Color.Yellow, Color.Black); //450*/
+			mainMenuManager.DrawCreditsButtons(spriteBatch);
         }
 
         private void DrawInGameUI(SpriteBatch spriteBatch)
@@ -626,19 +627,22 @@ namespace Charge
                     DrawStringWithShadow(spriteBatch, toDraw, new Vector2(strDrawX, initOffset + rowHeight * i));
                 }
             }
+
             if (hasDrawnMyScore)
             {
                 string highScore = "New High Score!";
                 int highScoreDrawX = GetCenteredStringLocation(FontSmall, highScore, GameplayVars.WinWidth / 2);
                 DrawStringWithShadow(spriteBatch, highScore, new Vector2(highScoreDrawX, initOffset - rowHeight), Color.Gold, new Color(10, 10, 10));
             }
+
             string finalScore = ("Final Score: " + score);
             string playAgain = controls.GetRestartString() + " to play again!";
             string returnToTitle = controls.GetReturnToTitleString() + " to return to the title screen";
             int scoreYPos = initOffset + rowHeight * GameplayVars.NumScores + 1;
             DrawStringWithShadow(spriteBatch, finalScore, new Vector2(GetCenteredStringLocation(FontSmall, finalScore, GameplayVars.WinWidth / 2), scoreYPos));
-            DrawStringWithShadow(spriteBatch, playAgain, new Vector2(GetCenteredStringLocation(FontSmall, playAgain, GameplayVars.WinWidth / 2), scoreYPos + rowHeight));
-            DrawStringWithShadow(spriteBatch, returnToTitle, new Vector2(GetCenteredStringLocation(FontSmall, returnToTitle, GameplayVars.WinWidth / 2), scoreYPos + rowHeight * 2));
+			//DrawStringWithShadow(spriteBatch, playAgain, new Vector2(GetCenteredStringLocation(FontSmall, playAgain, GameplayVars.WinWidth / 2), scoreYPos + rowHeight));
+			//DrawStringWithShadow(spriteBatch, returnToTitle, new Vector2(GetCenteredStringLocation(FontSmall, returnToTitle, GameplayVars.WinWidth / 2), scoreYPos + rowHeight * 2));
+			mainMenuManager.DrawGameOverButtons(spriteBatch);
         }
 
         private void DrawGamePausedUI(SpriteBatch spriteBatch)
@@ -711,9 +715,9 @@ namespace Charge
             {
                 mainMenuManager.ProcessMainMenuInput(this, controls);
             } 
-            else if (currentGameState == GameState.CreditsScreen && controls.MenuSelectTrigger())
+            else if (currentGameState == GameState.CreditsScreen)
             {
-                currentGameState = GameState.TitleScreen;
+				mainMenuManager.ProcessCreditsInput(this, controls);
             }
             else if (currentGameState == GameState.OptionsScreen)
             {
@@ -758,7 +762,7 @@ namespace Charge
             }
             else if (currentGameState == GameState.GameOver)
             {
-                if (controls.RestartTrigger())
+				/*if (controls.RestartTrigger())
                 {
                     currentGameState = GameState.InGame;
                     gameWorld.InitializeStateSpecificVariables(currentGameState);
@@ -772,7 +776,9 @@ namespace Charge
                     MediaPlayer.Stop();
                     MediaPlayer.Play(TitleMusic);
                     MediaPlayer.IsRepeating = true;
-                }
+                }*/
+
+				mainMenuManager.ProcessGameOverInput(this, controls);
             }
             else if (currentGameState == GameState.Paused)
             {
@@ -1268,6 +1274,12 @@ namespace Charge
         {
             currentGameState = GameState.CreditsScreen;
         }
+
+		internal void GameOverToTitleScreen()
+		{
+			currentGameState = GameState.TitleScreen;
+			gameWorld.InitializeStateSpecificVariables(currentGameState);
+		}
 
         internal void OptionsToTitleScreen()
         {

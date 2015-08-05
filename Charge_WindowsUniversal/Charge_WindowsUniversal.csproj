@@ -144,6 +144,9 @@
     <Compile Include="..\Charge_Core\LevelGenerator.cs">
       <Link>Charge_Core\LevelGenerator.cs</Link>
     </Compile>
+    <Compile Include="..\Charge_Core\MainMenuManager.cs">
+      <Link>Charge_Core\MainMenuManager.cs</Link>
+    </Compile>
     <Compile Include="..\Charge_Core\OverchargeEffect.cs">
       <Link>Charge_Core\OverchargeEffect.cs</Link>
     </Compile>
@@ -186,7 +189,6 @@
       <DependentUpon>GamePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Game1.cs" />
-    <Compile Include="MainMenuManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

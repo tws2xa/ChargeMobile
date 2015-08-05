@@ -44,6 +44,11 @@ namespace Charge
         Button clearHighScores;
         Button optionsBackToTitle;
 
+		Button playAgain;
+		Button gameOverReturnToTitle;
+
+		Button creditsReturnToTitle;
+
         //Title Menu Button Properties
         SpriteFont titleButtonFont;
         Color titleButtonTextColor;
@@ -84,8 +89,9 @@ namespace Charge
             skipTutorialButton = new Button("Skip", new Rectangle(GameplayVars.WinWidth - 210, GameplayVars.WinHeight - 110, 200, 100), Color.Black, FontSmall, WhiteTex, Color.WhiteSmoke);
             
             InitTitleButtons();
-
             InitOptionsButtons();
+			InitGameOverButtons();
+			InitCreditsButtons();
         }
 
 
@@ -171,6 +177,39 @@ namespace Charge
             yPos += btnHeight * 3 / 2;
         }
 
+		public void InitGameOverButtons()
+		{
+			//Layout:
+			//			New High Score
+			//		1. [score #1]
+			//		2. [score #2]
+			//		...
+			//		Final Score: [final score]
+			//	[Play Again]		[Main Menu]
+
+			int btnWidth = GameplayVars.WinWidth / 4;
+			int btnHeight = titleButtonHeight;
+
+			int btnY = 763;
+
+			int playBtnX = 1 * GameplayVars.WinWidth / 8;
+			int titleBtnX = 5 * GameplayVars.WinWidth / 8;
+
+			playAgain = new Button("Play Again", new Rectangle(playBtnX, btnY, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+			gameOverReturnToTitle = new Button("Main Menu", new Rectangle(titleBtnX, btnY, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+		}
+
+		public void InitCreditsButtons()
+		{
+			int btnX = GameplayVars.WinWidth / 3;
+			int btnY = 924;
+
+			int btnWidth = GameplayVars.WinWidth / 3;
+			int btnHeight = titleButtonHeight;
+
+			creditsReturnToTitle = new Button("Back", new Rectangle(btnX, btnY, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+		}
+
         public void DrawTitleScreen(SpriteBatch spriteBatch)
         {
             //Draw Title Menu
@@ -221,11 +260,22 @@ namespace Charge
             optionsBackToTitle.Draw(spriteBatch);
         }
 
-        /// <summary>
-        /// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
-        /// </summary>
-        /// <param name="spriteBatch"></param>
-        public void DrawSkipTutorial(SpriteBatch spriteBatch)
+		public void DrawGameOverButtons(SpriteBatch spriteBatch)
+		{
+			playAgain.Draw(spriteBatch);
+			gameOverReturnToTitle.Draw(spriteBatch);
+		}
+
+		public void DrawCreditsButtons(SpriteBatch spriteBatch)
+		{
+			creditsReturnToTitle.Draw(spriteBatch);
+		}
+
+		/// <summary>
+		/// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
+		/// </summary>
+		/// <param name="spriteBatch"></param>
+		public void DrawSkipTutorial(SpriteBatch spriteBatch)
         {
             skipTutorialButton.Draw(spriteBatch);
         }
@@ -288,5 +338,29 @@ namespace Charge
 
 			return skipTriggered;
         }
+
+		internal void ProcessGameOverInput(ChargeMain main, Controls controls)
+		{
+			if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(playAgain.GetButtonRegion())) || controls.TapRegionCheck(playAgain.GetButtonRegion()))
+			{
+				main.StartGame();
+			}
+			else if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(gameOverReturnToTitle.GetButtonRegion())) || controls.TapRegionCheck(gameOverReturnToTitle.GetButtonRegion()))
+			{
+				main.GameOverToTitleScreen();
+			}
+
+			lastMouseState = Mouse.GetState().LeftButton;
+		}
+
+		internal void ProcessCreditsInput(ChargeMain main, Controls controls)
+		{
+			if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(creditsReturnToTitle.GetButtonRegion())) || controls.TapRegionCheck(creditsReturnToTitle.GetButtonRegion()))
+			{
+				main.OptionsToTitleScreen();
+			}
+
+			lastMouseState = Mouse.GetState().LeftButton;
+		}
     }
 }
