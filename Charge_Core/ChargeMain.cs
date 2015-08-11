@@ -29,8 +29,9 @@ namespace Charge
         public static SoundEffect dischargeSound;
         public static SoundEffect rearmSound;
         public static Song Background1;
-        
-        public static Texture2D BackgroundTex;
+		public static Song TitleMusic;
+
+		public static Texture2D BackgroundTex;
         public static Texture2D BarrierTex;
         public static Texture2D BatteryTex;
         public static Texture2D EnemyTex;
@@ -81,8 +82,6 @@ namespace Charge
         // User Settings
         public static float masterVolume;
         private bool showTutorial;
-        
-        private Song TitleMusic;
         
         private PixelEffect fullScreenPixelEffect;
         private bool doPausePixelEffect = true;
@@ -574,7 +573,7 @@ namespace Charge
 			/*String Back = "Back";
             int BackDrawX = GetCenteredStringLocation(FontSmall, Back, GameplayVars.WinWidth / 2);
             DrawStringWithShadow(spriteBatch, Back, new Vector2(BackDrawX, yPos), Color.Yellow, Color.Black); //450*/
-			mainMenuManager.DrawCreditsButtons(spriteBatch);
+			mainMenuManager.DrawCreditsInput(spriteBatch);
         }
 
         private void DrawInGameUI(SpriteBatch spriteBatch)
@@ -636,13 +635,11 @@ namespace Charge
             }
 
             string finalScore = ("Final Score: " + score);
-            string playAgain = controls.GetRestartString() + " to play again!";
-            string returnToTitle = controls.GetReturnToTitleString() + " to return to the title screen";
+            
             int scoreYPos = initOffset + rowHeight * GameplayVars.NumScores + 1;
             DrawStringWithShadow(spriteBatch, finalScore, new Vector2(GetCenteredStringLocation(FontSmall, finalScore, GameplayVars.WinWidth / 2), scoreYPos));
-			//DrawStringWithShadow(spriteBatch, playAgain, new Vector2(GetCenteredStringLocation(FontSmall, playAgain, GameplayVars.WinWidth / 2), scoreYPos + rowHeight));
-			//DrawStringWithShadow(spriteBatch, returnToTitle, new Vector2(GetCenteredStringLocation(FontSmall, returnToTitle, GameplayVars.WinWidth / 2), scoreYPos + rowHeight * 2));
-			mainMenuManager.DrawGameOverButtons(spriteBatch);
+			
+			mainMenuManager.DrawGameOverInput(spriteBatch);
         }
 
         private void DrawGamePausedUI(SpriteBatch spriteBatch)

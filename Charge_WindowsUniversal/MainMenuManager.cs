@@ -7,6 +7,7 @@ using System.Xml;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 #endregion
@@ -23,9 +24,7 @@ namespace Charge
             Tutorial,
             Back
         };
-
-        private OptionSelection currentOptionSelection;
-
+		
         SpriteFont FontLarge;
         SpriteFont FontSmall;
 
@@ -45,6 +44,11 @@ namespace Charge
         Button clearHighScores;
         Button optionsBackToTitle;
 
+		Button playAgain;
+		Button gameOverReturnToTitle;
+
+		Button creditsReturnToTitle;
+
         //Title Menu Button Properties
         SpriteFont titleButtonFont;
         Color titleButtonTextColor;
@@ -62,9 +66,10 @@ namespace Charge
         int volBarYPos;
         int volBarHeight;
         bool highScoresCleared = false;
-            
 
-        public MainMenuManager(Texture2D WhiteTex, SpriteFont FontLarge, SpriteFont FontSmall)
+		private ButtonState lastMouseState; // Needed to avoid registering the same click twice
+
+		public MainMenuManager(Texture2D WhiteTex, SpriteFont FontLarge, SpriteFont FontSmall)
         {
             this.WhiteTex = WhiteTex;
             this.FontLarge = FontLarge;
@@ -77,15 +82,16 @@ namespace Charge
             titleButtonHeight = GameplayVars.WinHeight / 10;
             titleButtonBorderSize = titleButtonWidth / 50; //Tiny border!
 
-            currentOptionSelection = OptionSelection.Volume;
+			lastMouseState = ButtonState.Released;
 
             ClearHighScoresText = GameplayVars.DefaultClearHighScoresText;
 
             skipTutorialButton = new Button("Skip", new Rectangle(GameplayVars.WinWidth - 210, GameplayVars.WinHeight - 110, 200, 100), Color.Black, FontSmall, WhiteTex, Color.WhiteSmoke);
             
             InitTitleButtons();
-
             InitOptionsButtons();
+			InitGameOverButtons();
+			InitCreditsButtons();
         }
 
 
@@ -110,6 +116,23 @@ namespace Charge
             yPos += titleButtonHeight + vSpacer;
             creditsButton = new Button("Credits", new Rectangle(optionsAndCreditsX, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
                 titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+
+            /*
+            // Button layout 2
+            // [  Begin  ]
+            // [ Options ]
+            // [ Credits ]
+            int xPos = GameplayVars.WinWidth / 2 - titleButtonWidth / 2;
+            int yPos = GameplayVars.WinHeight / 3;
+            beginButton = new Button("Play", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            yPos += titleButtonHeight * 3 / 2;
+            optionsButton = new Button("Options", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            yPos += titleButtonHeight * 3 / 2;
+            creditsButton = new Button("Credits", new Rectangle(xPos, yPos, titleButtonWidth, titleButtonHeight), titleButtonTextColor,
+                titleButtonFont, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+            */
         }
 
         public void InitOptionsButtons()
@@ -153,6 +176,39 @@ namespace Charge
             optionsBackToTitle = new Button("Back", new Rectangle(btnX, yPos, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
             yPos += btnHeight * 3 / 2;
         }
+
+		public void InitGameOverButtons()
+		{
+			//Layout:
+			//			New High Score
+			//		1. [score #1]
+			//		2. [score #2]
+			//		...
+			//		Final Score: [final score]
+			//	[Play Again]		[Main Menu]
+
+			int btnWidth = GameplayVars.WinWidth / 4;
+			int btnHeight = titleButtonHeight;
+
+			int btnY = 763;
+
+			int playBtnX = 1 * GameplayVars.WinWidth / 8;
+			int titleBtnX = 5 * GameplayVars.WinWidth / 8;
+
+			playAgain = new Button("Play Again", new Rectangle(playBtnX, btnY, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+			gameOverReturnToTitle = new Button("Main Menu", new Rectangle(titleBtnX, btnY, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+		}
+
+		public void InitCreditsButtons()
+		{
+			int btnX = GameplayVars.WinWidth / 3;
+			int btnY = 924;
+
+			int btnWidth = GameplayVars.WinWidth / 3;
+			int btnHeight = titleButtonHeight;
+
+			creditsReturnToTitle = new Button("Back", new Rectangle(btnX, btnY, btnWidth, btnHeight), titleButtonTextColor, FontSmall, WhiteTex, titleButtonBackColor, titleButtonBorderSize, titleButtonTextColor);
+		}
 
         public void DrawTitleScreen(SpriteBatch spriteBatch)
         {
@@ -204,65 +260,105 @@ namespace Charge
             optionsBackToTitle.Draw(spriteBatch);
         }
 
-        /// <summary>
-        /// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
-        /// </summary>
-        /// <param name="spriteBatch"></param>
-        public void DrawSkipTutorial(SpriteBatch spriteBatch)
+		public void DrawGameOverInput(SpriteBatch spriteBatch)
+		{
+			playAgain.Draw(spriteBatch);
+			gameOverReturnToTitle.Draw(spriteBatch);
+		}
+
+		public void DrawCreditsInput(SpriteBatch spriteBatch)
+		{
+			creditsReturnToTitle.Draw(spriteBatch);
+		}
+
+		/// <summary>
+		/// Draws the interface for the skip tutorial action. For desktop it will display a string indicating which keyboard key to push. On mobile it will draw a button that can be tapped to skip.
+		/// </summary>
+		/// <param name="spriteBatch"></param>
+		public void DrawSkipTutorial(SpriteBatch spriteBatch)
         {
             skipTutorialButton.Draw(spriteBatch);
         }
 
         public void ProcessMainMenuInput(ChargeMain main, Controls controls)
         {
-            if (controls.TapRegionCheck(beginButton.GetButtonRegion()))
+			if (controls.ClickedOrTapped(beginButton.GetButtonRegion(), lastMouseState))
             {
                 main.StartGame();
             }
-            else if (controls.TapRegionCheck(optionsButton.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(optionsButton.GetButtonRegion(), lastMouseState))
             {
                 main.TitleToOptionsScreen();
             }
-            else if (controls.TapRegionCheck(creditsButton.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(creditsButton.GetButtonRegion(), lastMouseState))
             {
                 main.TitleToCreditsScene();
             }
+
+			lastMouseState = Mouse.GetState().LeftButton;
         }
 
         internal void ProcessOptionsInput(ChargeMain main, Controls controls)
         {
-            if (controls.TapRegionCheck(optionsBackToTitle.GetButtonRegion()))
+            if (controls.ClickedOrTapped(optionsBackToTitle.GetButtonRegion(), lastMouseState))
             {
                 //Reset the clear high scores button
                 highScoresCleared = false;
                 clearHighScores.SetText(GameplayVars.DefaultClearHighScoresText);
                 main.OptionsToTitleScreen();
             }
-            else if (!highScoresCleared && controls.TapRegionCheck(clearHighScores.GetButtonRegion()))
+            else if (!highScoresCleared && controls.ClickedOrTapped(clearHighScores.GetButtonRegion(), lastMouseState))
             {
                 main.ClearHighScores();
                 highScoresCleared = true;
                 clearHighScores.SetText("High Scores Cleared");
             }
-            else if (controls.TapRegionCheck(tutorial.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(tutorial.GetButtonRegion(), lastMouseState))
             {
                 main.LaunchTutorial();
             }
-
-            if (controls.TapRegionCheck(volumeDown.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(volumeDown.GetButtonRegion(), lastMouseState))
             {
                 main.AdjustMasterVolume(-GameplayVars.VolumeChangeAmount);
             }
-
-            if (controls.TapRegionCheck(volumeUp.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(volumeUp.GetButtonRegion(), lastMouseState))
             {
                 main.AdjustMasterVolume(GameplayVars.VolumeChangeAmount);
             }
-        }
+
+			lastMouseState = Mouse.GetState().LeftButton;
+		}
 
         internal bool SkipTutorialTriggered(Controls controls)
         {
-            return controls.TapRegionCheck(skipTutorialButton.GetButtonRegion());
+			bool skipTriggered = controls.ClickedOrTapped(skipTutorialButton.GetButtonRegion(), lastMouseState);
+            lastMouseState = Mouse.GetState().LeftButton;
+
+			return skipTriggered;
         }
+
+		internal void ProcessGameOverInput(ChargeMain main, Controls controls)
+		{
+			if (controls.ClickedOrTapped(playAgain.GetButtonRegion(), lastMouseState))
+			{
+				main.StartGame();
+			}
+			else if (controls.ClickedOrTapped(gameOverReturnToTitle.GetButtonRegion(), lastMouseState))
+			{
+				main.GameOverToTitleScreen();
+			}
+
+			lastMouseState = Mouse.GetState().LeftButton;
+		}
+
+		internal void ProcessCreditsInput(ChargeMain main, Controls controls)
+		{
+			if (controls.ClickedOrTapped(creditsReturnToTitle.GetButtonRegion(), lastMouseState))
+			{
+				main.OptionsToTitleScreen();
+			}
+
+			lastMouseState = Mouse.GetState().LeftButton;
+		}
     }
 }

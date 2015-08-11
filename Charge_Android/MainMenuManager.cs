@@ -260,13 +260,13 @@ namespace Charge
             optionsBackToTitle.Draw(spriteBatch);
         }
 
-		public void DrawGameOverButtons(SpriteBatch spriteBatch)
+		public void DrawGameOverInput(SpriteBatch spriteBatch)
 		{
 			playAgain.Draw(spriteBatch);
 			gameOverReturnToTitle.Draw(spriteBatch);
 		}
 
-		public void DrawCreditsButtons(SpriteBatch spriteBatch)
+		public void DrawCreditsInput(SpriteBatch spriteBatch)
 		{
 			creditsReturnToTitle.Draw(spriteBatch);
 		}
@@ -282,15 +282,15 @@ namespace Charge
 
         public void ProcessMainMenuInput(ChargeMain main, Controls controls)
         {
-            if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(beginButton.GetButtonRegion())) || controls.TapRegionCheck(beginButton.GetButtonRegion()))
+			if (controls.ClickedOrTapped(beginButton.GetButtonRegion(), lastMouseState))
             {
                 main.StartGame();
             }
-            else if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(optionsButton.GetButtonRegion())) || controls.TapRegionCheck(optionsButton.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(optionsButton.GetButtonRegion(), lastMouseState))
             {
                 main.TitleToOptionsScreen();
             }
-            else if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(creditsButton.GetButtonRegion())) || controls.TapRegionCheck(creditsButton.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(creditsButton.GetButtonRegion(), lastMouseState))
             {
                 main.TitleToCreditsScene();
             }
@@ -300,30 +300,28 @@ namespace Charge
 
         internal void ProcessOptionsInput(ChargeMain main, Controls controls)
         {
-            if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(optionsBackToTitle.GetButtonRegion())) || controls.TapRegionCheck(optionsBackToTitle.GetButtonRegion()))
+            if (controls.ClickedOrTapped(optionsBackToTitle.GetButtonRegion(), lastMouseState))
             {
                 //Reset the clear high scores button
                 highScoresCleared = false;
                 clearHighScores.SetText(GameplayVars.DefaultClearHighScoresText);
                 main.OptionsToTitleScreen();
             }
-            else if (!highScoresCleared && (((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(clearHighScores.GetButtonRegion())) || controls.TapRegionCheck(clearHighScores.GetButtonRegion()))))
+            else if (!highScoresCleared && controls.ClickedOrTapped(clearHighScores.GetButtonRegion(), lastMouseState))
             {
                 main.ClearHighScores();
                 highScoresCleared = true;
                 clearHighScores.SetText("High Scores Cleared");
             }
-            else if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(tutorial.GetButtonRegion())) || controls.TapRegionCheck(tutorial.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(tutorial.GetButtonRegion(), lastMouseState))
             {
                 main.LaunchTutorial();
             }
-
-            if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(volumeDown.GetButtonRegion())) || controls.TapRegionCheck(volumeDown.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(volumeDown.GetButtonRegion(), lastMouseState))
             {
                 main.AdjustMasterVolume(-GameplayVars.VolumeChangeAmount);
             }
-
-            if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(volumeUp.GetButtonRegion())) || controls.TapRegionCheck(volumeUp.GetButtonRegion()))
+            else if (controls.ClickedOrTapped(volumeUp.GetButtonRegion(), lastMouseState))
             {
                 main.AdjustMasterVolume(GameplayVars.VolumeChangeAmount);
             }
@@ -333,19 +331,19 @@ namespace Charge
 
         internal bool SkipTutorialTriggered(Controls controls)
         {
-			bool skipTriggered = (lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(skipTutorialButton.GetButtonRegion())) || controls.TapRegionCheck(skipTutorialButton.GetButtonRegion());
-			lastMouseState = Mouse.GetState().LeftButton;
+			bool skipTriggered = controls.ClickedOrTapped(skipTutorialButton.GetButtonRegion(), lastMouseState);
+            lastMouseState = Mouse.GetState().LeftButton;
 
 			return skipTriggered;
         }
 
 		internal void ProcessGameOverInput(ChargeMain main, Controls controls)
 		{
-			if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(playAgain.GetButtonRegion())) || controls.TapRegionCheck(playAgain.GetButtonRegion()))
+			if (controls.ClickedOrTapped(playAgain.GetButtonRegion(), lastMouseState))
 			{
 				main.StartGame();
 			}
-			else if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(gameOverReturnToTitle.GetButtonRegion())) || controls.TapRegionCheck(gameOverReturnToTitle.GetButtonRegion()))
+			else if (controls.ClickedOrTapped(gameOverReturnToTitle.GetButtonRegion(), lastMouseState))
 			{
 				main.GameOverToTitleScreen();
 			}
@@ -355,7 +353,7 @@ namespace Charge
 
 		internal void ProcessCreditsInput(ChargeMain main, Controls controls)
 		{
-			if ((lastMouseState != ButtonState.Pressed && controls.ClickRegionCheck(creditsReturnToTitle.GetButtonRegion())) || controls.TapRegionCheck(creditsReturnToTitle.GetButtonRegion()))
+			if (controls.ClickedOrTapped(creditsReturnToTitle.GetButtonRegion(), lastMouseState))
 			{
 				main.OptionsToTitleScreen();
 			}

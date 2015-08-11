@@ -302,6 +302,11 @@ namespace Charge
 			return "Press [D]";
         }
 
+		public bool ClickedOrTapped(Rectangle region, ButtonState lastMouseState)
+		{
+			return (lastMouseState != ButtonState.Pressed && ClickRegionCheck(region)) || TapRegionCheck(region);
+        }
+
 		/// <summary>
 		/// Checks if there was a tap somewhere within a particular region
 		/// </summary>

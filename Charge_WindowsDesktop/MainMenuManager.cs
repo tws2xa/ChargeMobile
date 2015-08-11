@@ -155,7 +155,25 @@ namespace Charge
             spriteBatch.DrawString(FontSmall, skipText, textPosition, Color.WhiteSmoke);
         }
 
-        public void ProcessMainMenuInput(ChargeMain main, Controls controls)
+		public void DrawCreditsInput(SpriteBatch spriteBatch)
+		{
+			String Back = "Back";
+			int BackDrawX = ChargeMain.GetCenteredStringLocation(FontSmall, Back, GameplayVars.WinWidth / 2);
+			ChargeMain.DrawStringWithShadow(spriteBatch, Back, new Vector2(BackDrawX, 924), Color.Yellow, Color.Black);
+		}
+
+		public void DrawGameOverInput(SpriteBatch spriteBatch)
+		{
+			Controls tempControls = new Controls();
+
+			string playAgain = tempControls.GetRestartString() + " to play again!";
+			string returnToTitle = tempControls.GetReturnToTitleString() + " to return to the title screen";
+
+			ChargeMain.DrawStringWithShadow(spriteBatch, playAgain, new Vector2(ChargeMain.GetCenteredStringLocation(FontSmall, playAgain, GameplayVars.WinWidth / 2), 763));
+			ChargeMain.DrawStringWithShadow(spriteBatch, returnToTitle, new Vector2(ChargeMain.GetCenteredStringLocation(FontSmall, returnToTitle, GameplayVars.WinWidth / 2), 793));
+		}
+
+		public void ProcessMainMenuInput(ChargeMain main, Controls controls)
         {
             if (controls.MenuUpTrigger())
             {
@@ -249,5 +267,25 @@ namespace Charge
         {
             return controls.TutorialSkipTrigger();
         }
+
+		internal void ProcessCreditsInput(ChargeMain main, Controls controls)
+		{
+			if (controls.MenuSelectTrigger())
+			{
+				main.OptionsToTitleScreen();
+			}
+		}
+
+		internal void ProcessGameOverInput(ChargeMain main, Controls controls)
+		{
+			if (controls.RestartTrigger())
+			{
+				main.StartGame();
+			}
+			else if (controls.TitleScreenTrigger())
+			{
+				main.GameOverToTitleScreen();
+			}
+		}
     }
 }
